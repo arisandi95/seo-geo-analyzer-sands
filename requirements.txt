@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+httpx
+beautifulsoup4
+lxml
+defusedxml
+protego
+python-dotenv
+jinja2
+python-multipart

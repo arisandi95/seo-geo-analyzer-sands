@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}SEO & GEO Analyzer — Analisa Website Anda{% endblock %}
+
+{% block content %}
+<main>
+    <header class="site-header">
+        <div class="site-header__brand" aria-label="Yuvite SEO & GEO Analyzer">
+            <img class="site-header__logo" src="/static/logo.png" alt="Logo Yuvite" width="40" height="40">
+            <span class="site-header__name">SEO & GEO Analyzer</span>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <!-- <div class="hero__badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                SEO & GEO Analysis
+            </div> -->
+            <h1 class="hero__title">Analisa Website Anda<br>untuk SEO & AI</h1>
+            <p class="hero__subtitle">Cek kesiapan website Anda di mesin pencari dan AI answer engine seperti ChatGPT, Perplexity, dan Google AI Overview. Alat ini membantu Anda mengaudit robots.txt, sitemap, title tag, meta description, structured data, dan konten untuk optimasi generatif.</p>
+            <div class="hero__highlights">
+                <span class="hero__pill">Audit SEO on-page</span>
+                <span class="hero__pill">Cek GEO readiness</span>
+                <span class="hero__pill">Rekomendasi AI</span>
+            </div>
+
+            <!-- URL Input Form -->
+            <div class="form-wrapper">
+                <form id="analyze-form"
+                      hx-post="/analyze"
+                      hx-target="#result-container"
+                      hx-indicator="#loading"
+                      hx-swap="innerHTML">
+                    <div class="input-group">
+                        <input type="text"
+                               id="url-input"
+                               name="url"
+                               class="input-group__input"
+                               placeholder="Masukkan URL website, contoh: example.com"
+                               autocomplete="url"
+                               spellcheck="false"
+                               required>
+                        <button type="submit" class="input-group__btn" id="analyze-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            Analisa Sekarang
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Skeleton -->
+    <div id="loading" class="loading-container container">
+        <div class="skeleton-card">
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-line skeleton-line--long"></div>
+            <div class="skeleton-line skeleton-line--medium"></div>
+            <div class="skeleton-circle"></div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-line skeleton-line--long"></div>
+            <div class="skeleton-line skeleton-line--medium"></div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-line skeleton-line--long"></div>
+            <div class="skeleton-line skeleton-line--medium"></div>
+            <div class="skeleton-circle"></div>
+        </div>
+    </div>
+
+    <section class="seo-section container" aria-labelledby="seo-benefits-title">
+        <div class="seo-section__intro">
+            <p class="section-label">Alat SEO & GEO modern</p>
+            <h2 id="seo-benefits-title">Buat konten Anda lebih mudah ditemukan oleh pencari dan AI</h2>
+            <p>Gunakan analisa cepat untuk melihat apakah halaman Anda sudah siap untuk mesin pencari, crawler AI, dan rich results. Kami membantu Anda memeriksa elemen teknis yang paling sering memengaruhi visibilitas dan kutipan AI.</p>
+        </div>
+        <div class="seo-section__grid">
+            <article class="feature-card">
+                <h3>SEO teknikal</h3>
+                <p>Periksa title, meta description, heading, canonical, viewport, alt text, dan struktur data dengan cepat.</p>
+            </article>
+            <article class="feature-card">
+                <h3>GEO readiness</h3>
+                <p>Evaluasi kesiapan konten untuk AI answer engine dengan fokus pada FAQ schema, heading berbasis pertanyaan, dan sinyal author.</p>
+            </article>
+            <article class="feature-card">
+                <h3>Rekomendasi praktis</h3>
+                <p>Dapatkan saran perbaikan yang actionable dalam bahasa Indonesia, siap diterapkan untuk menaikkan kualitas halaman.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- Results Container (populated via HTMX) -->
+    <div id="result-container" class="result-container container"></div>
+</main>
+{% endblock %}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SEO & GEO Analyzer — Audit Website untuk Mesin Pencari dan AI{% endblock %}</title>
+    <meta name="description" content="Audit SEO dan GEO website Anda secara cepat: cek robots.txt, sitemap, title, meta description, structured data, dan kesiapan konten untuk AI answer engine seperti ChatGPT dan Perplexity.">
+    <meta name="keywords" content="seo analyzer, geo analyzer, analisa seo, analisa geo, audit website, cek robots txt, cek sitemap, seo ai, ai optimization">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Yuvite">
+    <link rel="canonical" href="{{ request.url.scheme }}://{{ request.url.netloc }}/">
+    <meta property="og:title" content="SEO & GEO Analyzer — Audit Website untuk Mesin Pencari dan AI">
+    <meta property="og:description" content="Cek performa SEO dan kesiapan GEO website Anda dengan analisa cepat, actionable, dan berbasis AI.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://yuvite.com/assets/images/logo.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SEO & GEO Analyzer — Audit Website untuk Mesin Pencari dan AI">
+    <meta name="twitter:description" content="Cek performa SEO dan kesiapan GEO website Anda dengan analisa cepat, actionable, dan berbasis AI.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "SEO & GEO Analyzer",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Windows, Linux, macOS",
+      "description": "Alat audit website untuk SEO on-page, GEO readiness, robots.txt, sitemap, dan rekomendasi AI.",
+      "url": "{{ request.url.scheme }}://{{ request.url.netloc }}/",
+      "image": "https://yuvite.com/assets/images/logo.png",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+</head>
+<body>
+    {% block content %}{% endblock %}
+
+    <footer class="footer">
+        <p>SEO & GEO Analyzer — Ditenagai oleh AI</p>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

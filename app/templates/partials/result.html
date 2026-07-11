@@ -1,0 +1,283 @@
+{% if error %}
+<!-- Error State -->
+<div class="error-card">
+    <div class="error-card__icon">⚠️</div>
+    <h3 class="error-card__title">Tidak Dapat Menganalisa</h3>
+    <p class="error-card__message">{{ error }}</p>
+</div>
+{% else %}
+
+<!-- Result Header -->
+<div class="result-header">
+    <p class="result-header__url">{{ audit.url }}</p>
+    <h2 class="result-header__title">Hasil Analisa</h2>
+</div>
+
+<!-- Fetch Warnings -->
+{% if fetch_errors %}
+{% for err in fetch_errors %}
+<div class="warning-banner">
+    <span class="warning-banner__icon">⚠️</span>
+    <span>{{ err }}</span>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- ===== 1. Robots.txt Card ===== -->
+<div class="card" style="animation-delay: 0s">
+    <div class="card__header">
+        <div class="card__icon card__icon--robots">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Robots.txt</h3>
+            <p class="card__subtitle">Aturan akses crawler</p>
+        </div>
+    </div>
+
+    {% if audit.robots.exists %}
+    <ul class="check-list">
+        <li class="check-item">
+            <span class="check-item__badge check-item__badge--good">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <div class="check-item__content">
+                <div class="check-item__name">File robots.txt</div>
+                <div class="check-item__message">Ditemukan dan dapat diakses.</div>
+            </div>
+        </li>
+        <li class="check-item">
+            <span class="check-item__badge check-item__badge--{% if audit.robots.default_ua_allowed %}good{% else %}error{% endif %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    {% if audit.robots.default_ua_allowed %}<polyline points="20 6 9 17 4 12"/>{% else %}<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>{% endif %}
+                </svg>
+            </span>
+            <div class="check-item__content">
+                <div class="check-item__name">Default User-Agent (*)</div>
+                <div class="check-item__message">{% if audit.robots.default_ua_allowed %}Akses diizinkan untuk semua crawler standar.{% else %}Semua crawler diblokir secara default (Disallow: /).{% endif %}</div>
+            </div>
+        </li>
+    </ul>
+
+    {% if audit.robots.ai_crawler_access %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 4px;">Status AI Crawler</h4>
+    <p style="font-size: 0.8125rem; color: var(--color-text-secondary); margin-bottom: 12px;">Menentukan apakah AI answer engine bisa membaca konten website ini.</p>
+    <div class="crawler-grid">
+        {% for bot, allowed in audit.robots.ai_crawler_access.items() %}
+        <div class="crawler-item">
+            <span class="crawler-item__dot crawler-item__dot--{% if allowed %}allowed{% else %}blocked{% endif %}"></span>
+            <span>{{ bot }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <ul class="check-list">
+        <li class="check-item">
+            <span class="check-item__badge check-item__badge--warning">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <div class="check-item__content">
+                <div class="check-item__name">File robots.txt</div>
+                <div class="check-item__message">Tidak ditemukan (404) — ini bukan error kritis. Tanpa robots.txt, semua crawler diizinkan secara default.</div>
+            </div>
+        </li>
+    </ul>
+    {% endif %}
+</div>
+
+<!-- ===== 2. Sitemap Card ===== -->
+<div class="card" style="animation-delay: 0.08s">
+    <div class="card__header">
+        <div class="card__icon card__icon--sitemap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Sitemap</h3>
+            <p class="card__subtitle">Peta situs untuk crawler</p>
+        </div>
+    </div>
+
+    {% if audit.sitemap.found %}
+    <ul class="check-list">
+        <li class="check-item">
+            <span class="check-item__badge check-item__badge--good">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <div class="check-item__content">
+                <div class="check-item__name">Sitemap Ditemukan</div>
+                <div class="check-item__message">{{ audit.sitemap.url }}</div>
+            </div>
+        </li>
+    </ul>
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-item__value">{{ audit.sitemap.type or '-' }}</div>
+            <div class="info-item__label">Tipe</div>
+        </div>
+        <div class="info-item">
+            <div class="info-item__value">{{ audit.sitemap.total_urls }}</div>
+            <div class="info-item__label">Total URL</div>
+        </div>
+        <div class="info-item">
+            <div class="info-item__value">{% if audit.sitemap.has_lastmod %}✓{% else %}✗{% endif %}</div>
+            <div class="info-item__label">Lastmod</div>
+        </div>
+        {% if audit.sitemap.most_recent_lastmod %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size:1rem">{{ audit.sitemap.most_recent_lastmod }}</div>
+            <div class="info-item__label">Update Terakhir</div>
+        </div>
+        {% endif %}
+    </div>
+    {% if audit.sitemap.error %}
+    <div class="warning-banner" style="margin-top: 16px;">
+        <span class="warning-banner__icon">⚠️</span>
+        <span>{{ audit.sitemap.error }}</span>
+    </div>
+    {% endif %}
+    {% else %}
+    <ul class="check-list">
+        <li class="check-item">
+            <span class="check-item__badge check-item__badge--warning">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <div class="check-item__content">
+                <div class="check-item__name">Sitemap Tidak Ditemukan</div>
+                <div class="check-item__message">Tidak ada sitemap di lokasi standar. Membuat sitemap.xml membantu search engine mengindeks halaman lebih efisien.</div>
+            </div>
+        </li>
+    </ul>
+    {% endif %}
+</div>
+
+<!-- ===== 3. SEO Score Card ===== -->
+<div class="card" style="animation-delay: 0.16s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">SEO On-Page</h3>
+            <p class="card__subtitle">Optimasi mesin pencari</p>
+        </div>
+    </div>
+
+    <div class="score-section">
+        <div class="score-circle">
+            <svg class="score-circle__svg" viewBox="0 0 140 140">
+                <circle class="score-circle__bg" cx="70" cy="70" r="60"/>
+                <circle class="score-circle__progress score-circle__progress--{% if audit.seo.score >= 70 %}good{% elif audit.seo.score >= 40 %}warning{% else %}error{% endif %}"
+                        cx="70" cy="70" r="60"
+                        data-score="{{ audit.seo.score }}"/>
+            </svg>
+            <div class="score-circle__value">
+                <div class="score-circle__number" data-target="{{ audit.seo.score }}">0</div>
+                <div class="score-circle__label">Skor SEO</div>
+            </div>
+        </div>
+        <div class="score-details">
+            <ul class="check-list">
+                {% for check in audit.seo.checks %}
+                <li class="check-item">
+                    <span class="check-item__badge check-item__badge--{{ check.status }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            {% if check.status == 'good' %}<polyline points="20 6 9 17 4 12"/>
+                            {% elif check.status == 'warning' %}<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                            {% else %}<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>{% endif %}
+                        </svg>
+                    </span>
+                    <div class="check-item__content">
+                        <div class="check-item__name">{{ check.name }}</div>
+                        <div class="check-item__message">{{ check.message }}</div>
+                        {% if check.details %}
+                        <div class="check-item__detail">{{ check.details if check.details is string else check.details | join(', ') }}</div>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-grid" style="margin-top: 24px;">
+        <div class="info-item">
+            <div class="info-item__value">{{ audit.seo.word_count }}</div>
+            <div class="info-item__label">Jumlah Kata</div>
+        </div>
+        <div class="info-item">
+            <div class="info-item__value">{{ audit.seo.internal_links }}</div>
+            <div class="info-item__label">Internal Link</div>
+        </div>
+        <div class="info-item">
+            <div class="info-item__value">{{ audit.seo.external_links }}</div>
+            <div class="info-item__label">External Link</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 4. GEO Score Card ===== -->
+<div class="card" style="animation-delay: 0.24s">
+    <div class="card__header">
+        <div class="card__icon card__icon--geo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">GEO Readiness</h3>
+            <p class="card__subtitle">Kesiapan untuk AI answer engine</p>
+        </div>
+    </div>
+
+    <div class="score-section">
+        <div class="score-circle">
+            <svg class="score-circle__svg" viewBox="0 0 140 140">
+                <circle class="score-circle__bg" cx="70" cy="70" r="60"/>
+                <circle class="score-circle__progress score-circle__progress--{% if audit.geo.score >= 70 %}good{% elif audit.geo.score >= 40 %}warning{% else %}error{% endif %}"
+                        cx="70" cy="70" r="60"
+                        data-score="{{ audit.geo.score }}"/>
+            </svg>
+            <div class="score-circle__value">
+                <div class="score-circle__number" data-target="{{ audit.geo.score }}">0</div>
+                <div class="score-circle__label">Skor GEO</div>
+            </div>
+        </div>
+        <div class="score-details">
+            <ul class="check-list">
+                {% for check in audit.geo.checks %}
+                <li class="check-item">
+                    <span class="check-item__badge check-item__badge--{{ check.status }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            {% if check.status == 'good' %}<polyline points="20 6 9 17 4 12"/>
+                            {% elif check.status == 'warning' %}<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                            {% else %}<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>{% endif %}
+                        </svg>
+                    </span>
+                    <div class="check-item__content">
+                        <div class="check-item__name">{{ check.name }}</div>
+                        <div class="check-item__message">{{ check.message }}</div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 5. AI Recommendation Card ===== -->
+<div class="card card--ai" style="animation-delay: 0.32s">
+    <div class="card__header">
+        <div class="card__icon card__icon--ai">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Rekomendasi AI</h3>
+            <p class="card__subtitle">Saran perbaikan dari AI advisor</p>
+        </div>
+    </div>
+    <div class="ai-content">
+        {{ ai_recommendation | replace('\n', '<br>') | safe }}
+    </div>
+</div>
+
+{% endif %}
