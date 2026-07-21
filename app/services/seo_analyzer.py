@@ -186,6 +186,7 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
     # --- 5. Meta Viewport ---
     max_score += 8
     viewport = soup.find("meta", attrs={"name": "viewport"})
+    viewport_content = (viewport.get("content") or "").strip() if viewport else ""
     if viewport and viewport.get("content"):
         checks.append({
             "name": "Meta Viewport",
@@ -433,6 +434,12 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
         "keywords": keywords,
         "link_structure": link_structure,
         "friendly_links": friendly_links,
+        "viewport": {
+            "present": bool(viewport_content),
+            "content": viewport_content,
+            "has_device_width": "device-width" in viewport_content,
+            "has_initial_scale": "initial-scale" in viewport_content,
+        },
     }
 
 

@@ -504,8 +504,137 @@
 </div>
 {% endif %}
 
-<!-- ===== 10. GEO Score Card ===== -->
+<!-- ===== 10. Device Rendering & Mobile Viewport Card ===== -->
 <div class="card" style="animation-delay: 0.72s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Device Rendering</h3>
+            <p class="card__subtitle">Pratinjau halaman di mobile, tablet, dan desktop</p>
+        </div>
+    </div>
+
+    {% if audit.seo.viewport is defined %}
+    {% set vp = audit.seo.viewport %}
+    {% set vp_status = 'good' if (vp.present and vp.has_device_width) else ('warning' if vp.present else 'error') %}
+    <ul class="check-list" style="margin-bottom: 16px;">
+        <li class="check-item">
+            <span class="check-item__badge check-item__badge--{{ vp_status }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    {% if vp_status == 'good' %}<polyline points="20 6 9 17 4 12"/>
+                    {% elif vp_status == 'warning' %}<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    {% else %}<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>{% endif %}
+                </svg>
+            </span>
+            <div class="check-item__content">
+                <div class="check-item__name">Mobile Viewport</div>
+                <div class="check-item__message">
+                    {% if vp.present and vp.has_device_width %}
+                    Meta viewport menggunakan width=device-width{% if vp.has_initial_scale %} dan initial-scale{% endif %} — halaman responsive di perangkat mobile.
+                    {% elif vp.present %}
+                    Meta viewport ada tapi tanpa width=device-width — rendering mobile mungkin tidak optimal.
+                    {% else %}
+                    Meta viewport tidak ditemukan — halaman akan tampil sebagai versi desktop yang diperkecil di mobile.
+                    {% endif %}
+                </div>
+                {% if vp.content %}<div class="check-item__detail">{{ vp.content }}</div>{% endif %}
+            </div>
+        </li>
+    </ul>
+    {% endif %}
+
+    <div class="device-frames">
+        <div class="device-frame device-frame--mobile">
+            <div class="device-frame__viewport"><iframe src="{{ audit.url }}" loading="lazy" referrerpolicy="no-referrer" title="Pratinjau mobile"></iframe></div>
+            <div class="device-frame__label">Mobile · 375px</div>
+        </div>
+        <div class="device-frame device-frame--tablet">
+            <div class="device-frame__viewport"><iframe src="{{ audit.url }}" loading="lazy" referrerpolicy="no-referrer" title="Pratinjau tablet"></iframe></div>
+            <div class="device-frame__label">Tablet · 768px</div>
+        </div>
+        <div class="device-frame device-frame--desktop">
+            <div class="device-frame__viewport"><iframe src="{{ audit.url }}" loading="lazy" referrerpolicy="no-referrer" title="Pratinjau desktop"></iframe></div>
+            <div class="device-frame__label">Desktop · 1280px</div>
+        </div>
+    </div>
+    <p style="font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 12px;">Jika pratinjau kosong, situs kemungkinan memblokir embedding (X-Frame-Options / CSP frame-ancestors).</p>
+</div>
+
+<!-- ===== 11. PageSpeed & Core Web Vitals Card ===== -->
+{% if audit.pagespeed %}
+<div class="card" style="animation-delay: 0.80s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">PageSpeed Insights &amp; Core Web Vitals</h3>
+            <p class="card__subtitle">Data Google (Lighthouse{% if audit.pagespeed.field %} + Chrome UX Report{% endif %}) — strategi mobile</p>
+        </div>
+    </div>
+    {% if audit.pagespeed.available %}
+    {% if audit.pagespeed.performance_score is not none %}
+    {% set ps = audit.pagespeed.performance_score %}
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-item__value" style="color: var(--color-{{ 'success' if ps >= 90 else ('warning' if ps >= 50 else 'error') }});">{{ ps }}</div>
+            <div class="info-item__label">Skor Performa (Mobile)</div>
+        </div>
+        {% if audit.pagespeed.field and audit.pagespeed.field.overall %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1.125rem;">{{ audit.pagespeed.field.overall }}</div>
+            <div class="info-item__label">CWV Pengguna Real (CrUX)</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% if audit.pagespeed.field %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Core Web Vitals — Data Pengguna Real</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead><tr><th>Metrik</th><th>Nilai (p75)</th><th>Kategori</th></tr></thead>
+            <tbody>
+                {% for m in audit.pagespeed.field.metrics %}
+                <tr>
+                    <td class="keyword-table__term">{{ m.name }}</td>
+                    <td>{{ m.value }}</td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if m.status == 'good' else 'no' }}">{{ m.category }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if audit.pagespeed.lab %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Lab Metrics (Lighthouse)</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead><tr><th>Metrik</th><th>Nilai</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for m in audit.pagespeed.lab %}
+                <tr>
+                    <td class="keyword-table__term">{{ m.name }}</td>
+                    <td>{{ m.value }}</td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if m.status == 'good' else 'no' }}">{{ '✓' if m.status == 'good' else ('!' if m.status == 'warning' else '✗') }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% elif audit.pagespeed.note %}
+    <div class="warning-banner">
+        <span class="warning-banner__icon">ℹ️</span>
+        <span>{{ audit.pagespeed.note }}</span>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ===== 12. GEO Score Card ===== -->
+<div class="card" style="animation-delay: 0.88s">
     <div class="card__header">
         <div class="card__icon card__icon--geo">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
@@ -551,8 +680,8 @@
     </div>
 </div>
 
-<!-- ===== 11. AI Recommendation Card ===== -->
-<div class="card card--ai" style="animation-delay: 0.80s">
+<!-- ===== 13. AI Recommendation Card ===== -->
+<div class="card card--ai" style="animation-delay: 0.96s">
     <div class="card__header">
         <div class="card__icon card__icon--ai">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>

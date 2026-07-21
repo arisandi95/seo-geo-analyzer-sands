@@ -399,6 +399,70 @@
     {% endif %}
     {% endif %}
 
+    <!-- Usability: Mobile Viewport + PageSpeed & Core Web Vitals -->
+    {% if audit.seo.viewport is defined %}
+    <h2>Usability — Mobile Viewport</h2>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+        </tr>
+        <tr>
+            <td>Meta viewport</td>
+            <td>{% if audit.seo.viewport.present %}<span class="status-good">✓ Ada</span>{% else %}<span class="status-error">✗ Tidak ada</span>{% endif %}</td>
+        </tr>
+        <tr>
+            <td>width=device-width</td>
+            <td>{% if audit.seo.viewport.has_device_width %}<span class="status-good">✓</span>{% else %}<span class="status-error">✗</span>{% endif %}</td>
+        </tr>
+        {% if audit.seo.viewport.content %}
+        <tr><td>Isi</td><td>{{ audit.seo.viewport.content }}</td></tr>
+        {% endif %}
+    </table>
+    <p style="font-size: 11px; color: #666;">Pratinjau device rendering hanya tersedia di versi web.</p>
+    {% endif %}
+
+    {% if audit.pagespeed and audit.pagespeed.available %}
+    <h2>PageSpeed Insights &amp; Core Web Vitals (Mobile)</h2>
+    {% if audit.pagespeed.performance_score is not none %}
+    <p style="font-size: 12px;"><strong>Skor Performa: {{ audit.pagespeed.performance_score }}/100</strong>{% if audit.pagespeed.field and audit.pagespeed.field.overall %} — Penilaian CWV pengguna real: {{ audit.pagespeed.field.overall }}{% endif %}</p>
+    {% endif %}
+    {% if audit.pagespeed.field %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Core Web Vitals — Data Pengguna Real (CrUX)</h3>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai (p75)</th>
+            <th>Kategori</th>
+        </tr>
+        {% for m in audit.pagespeed.field.metrics %}
+        <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ m.value }}</td>
+            <td><span class="status-{{ m.status }}">{{ m.category }}</span></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% if audit.pagespeed.lab %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Lab Metrics (Lighthouse)</h3>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+            <th>Status</th>
+        </tr>
+        {% for m in audit.pagespeed.lab %}
+        <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ m.value }}</td>
+            <td><span class="status-{{ m.status }}">{{ m.status | upper }}</span></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endif %}
+
     <!-- GEO Analysis -->
     <h2>Analisa GEO Readiness</h2>
     <table>
