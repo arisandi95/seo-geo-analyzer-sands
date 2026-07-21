@@ -4,9 +4,12 @@ Uses BeautifulSoup4 + lxml for HTML parsing.
 """
 import re
 import json
+from collections import Counter
 from urllib.parse import urlparse, urljoin
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any, Optional
+
+from app.services.keyword_analyzer import extract_keywords
 
 
 def analyze_seo(html_content: str, target_url: str) -> dict:
@@ -39,6 +42,7 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
 
     # --- 1. Title Tag ---
     max_score += 10
+    title_text = ""
     title_tag = soup.find("title")
     if title_tag and title_tag.string:
         title_text = title_tag.string.strip()
@@ -76,6 +80,7 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
 
     # --- 2. Meta Description ---
     max_score += 10
+    desc_text = ""
     meta_desc = soup.find("meta", attrs={"name": re.compile(r"description", re.I)})
     if meta_desc and meta_desc.get("content"):
         desc_text = meta_desc["content"].strip()
@@ -116,6 +121,9 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
     h1_tags = soup.find_all("h1")
     h2_tags = soup.find_all("h2")
     h3_tags = soup.find_all("h3")
+    # Must be captured here: the word-count block below decompose()s nav/header/footer,
+    # destroying any heading tags inside them.
+    headings_text = " ".join(h.get_text(" ", strip=True) for h in h1_tags + h2_tags + h3_tags)
 
     if len(h1_tags) == 1:
         # Check heading hierarchy
@@ -178,6 +186,7 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
     # --- 5. Meta Viewport ---
     max_score += 8
     viewport = soup.find("meta", attrs={"name": "viewport"})
+    viewport_content = (viewport.get("content") or "").strip() if viewport else ""
     if viewport and viewport.get("content"):
         checks.append({
             "name": "Meta Viewport",
@@ -315,6 +324,7 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
         text = main_content.get_text(separator=" ", strip=True)
         words = len(text.split())
     else:
+        text = ""
         words = 0
 
     if words >= 300:
@@ -343,16 +353,48 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
     all_links = soup.find_all("a", href=True)
     internal_links = 0
     external_links = 0
+    nofollow_links = 0
+    external_nofollow = 0
+    anchor_counts = Counter()
+    internal_urls = set()
 
     for link in all_links:
         href = link["href"]
         if href.startswith("#") or href.startswith("javascript:") or href.startswith("mailto:"):
             continue
         parsed_href = urlparse(urljoin(target_url, href))
-        if parsed_href.netloc == domain or not parsed_href.netloc:
+        is_internal = parsed_href.netloc == domain or not parsed_href.netloc
+        is_nofollow = "nofollow" in (link.get("rel") or [])
+        if is_nofollow:
+            nofollow_links += 1
+        anchor = link.get_text(" ", strip=True)[:60]
+        if anchor:
+            anchor_counts[anchor] += 1
+        if is_internal:
             internal_links += 1
+            internal_urls.add(parsed_href.path + (f"?{parsed_href.query}" if parsed_href.query else ""))
         else:
             external_links += 1
+            if is_nofollow:
+                external_nofollow += 1
+
+    # --- Struktur link & friendly URL (informational — tidak mempengaruhi skor) ---
+    # ponytail: heuristik naif — query string, underscore, atau path >100 char = tidak friendly
+    unfriendly = [u for u in internal_urls if ("?" in u) or ("_" in u) or (len(u) > 100)]
+    link_structure = {
+        "total": internal_links + external_links,
+        "internal": internal_links,
+        "external": external_links,
+        "nofollow": nofollow_links,
+        "dofollow": internal_links + external_links - nofollow_links,
+        "external_nofollow": external_nofollow,
+        "top_anchors": [{"anchor": a, "count": c} for a, c in anchor_counts.most_common(10)],
+    }
+    friendly_links = {
+        "checked": len(internal_urls),
+        "friendly": len(internal_urls) - len(unfriendly),
+        "unfriendly_examples": sorted(unfriendly)[:8],
+    }
 
     if internal_links >= 3 and external_links >= 1:
         checks.append({
@@ -375,6 +417,9 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
             "message": f"Sangat sedikit link ({internal_links} internal, {external_links} external) — halaman terisolasi tidak baik untuk SEO.",
         })
 
+    # --- 12. Keyword Consistency (informational — does not affect score) ---
+    keywords = extract_keywords(text, title_text, desc_text, headings_text)
+
     # Calculate final score
     score = round((earned_score / max_score) * 100) if max_score > 0 else 0
 
@@ -384,4 +429,30 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
         "word_count": words,
         "internal_links": internal_links,
         "external_links": external_links,
+        "title": title_text,
+        "meta_description": desc_text,
+        "keywords": keywords,
+        "link_structure": link_structure,
+        "friendly_links": friendly_links,
+        "viewport": {
+            "present": bool(viewport_content),
+            "content": viewport_content,
+            "has_device_width": "device-width" in viewport_content,
+            "has_initial_scale": "initial-scale" in viewport_content,
+        },
     }
+
+
+if __name__ == "__main__":
+    _html = """<html><head><title>Uji Halaman Struktur Link</title></head><body><main>
+    <a href="/produk">Produk</a> <a href="/produk">Produk</a>
+    <a href="/cari?q=x&id=1">Cari</a> <a href="/halaman_lama">Lama</a>
+    <a href="https://luar.com" rel="nofollow">Luar</a>
+    <p>konten konten konten</p></main></body></html>"""
+    _r = analyze_seo(_html, "https://situs.id/")
+    _ls, _fl = _r["link_structure"], _r["friendly_links"]
+    assert _ls["internal"] == 4 and _ls["external"] == 1 and _ls["nofollow"] == 1
+    assert _ls["external_nofollow"] == 1 and _ls["dofollow"] == 4
+    assert _ls["top_anchors"][0] == {"anchor": "Produk", "count": 2}
+    assert _fl["checked"] == 3 and _fl["friendly"] == 1  # query string & underscore = tidak friendly
+    print("seo_analyzer link demo OK")
