@@ -44,6 +44,13 @@ INSTRUCTIONS_AGENT.txt
 # VS Code
 .vscode/
 
+# Local tooling & planning files
+.claude/
+plan.md
+
+# Local runtime database
+data/*.db
+
 # OS files
 .DS_Store
 Thumbs.db

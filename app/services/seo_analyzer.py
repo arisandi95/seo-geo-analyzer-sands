@@ -8,6 +8,8 @@ from urllib.parse import urlparse, urljoin
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any, Optional
 
+from app.services.keyword_analyzer import extract_keywords
+
 
 def analyze_seo(html_content: str, target_url: str) -> dict:
     """
@@ -39,6 +41,7 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
 
     # --- 1. Title Tag ---
     max_score += 10
+    title_text = ""
     title_tag = soup.find("title")
     if title_tag and title_tag.string:
         title_text = title_tag.string.strip()
@@ -76,6 +79,7 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
 
     # --- 2. Meta Description ---
     max_score += 10
+    desc_text = ""
     meta_desc = soup.find("meta", attrs={"name": re.compile(r"description", re.I)})
     if meta_desc and meta_desc.get("content"):
         desc_text = meta_desc["content"].strip()
@@ -116,6 +120,9 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
     h1_tags = soup.find_all("h1")
     h2_tags = soup.find_all("h2")
     h3_tags = soup.find_all("h3")
+    # Must be captured here: the word-count block below decompose()s nav/header/footer,
+    # destroying any heading tags inside them.
+    headings_text = " ".join(h.get_text(" ", strip=True) for h in h1_tags + h2_tags + h3_tags)
 
     if len(h1_tags) == 1:
         # Check heading hierarchy
@@ -315,6 +322,7 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
         text = main_content.get_text(separator=" ", strip=True)
         words = len(text.split())
     else:
+        text = ""
         words = 0
 
     if words >= 300:
@@ -375,6 +383,9 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
             "message": f"Sangat sedikit link ({internal_links} internal, {external_links} external) — halaman terisolasi tidak baik untuk SEO.",
         })
 
+    # --- 12. Keyword Consistency (informational — does not affect score) ---
+    keywords = extract_keywords(text, title_text, desc_text, headings_text)
+
     # Calculate final score
     score = round((earned_score / max_score) * 100) if max_score > 0 else 0
 
@@ -384,4 +395,7 @@ def analyze_seo(html_content: str, target_url: str) -> dict:
         "word_count": words,
         "internal_links": internal_links,
         "external_links": external_links,
+        "title": title_text,
+        "meta_description": desc_text,
+        "keywords": keywords,
     }

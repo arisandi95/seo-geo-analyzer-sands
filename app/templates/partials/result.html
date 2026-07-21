@@ -217,8 +217,118 @@
     </div>
 </div>
 
-<!-- ===== 4. GEO Score Card ===== -->
+<!-- ===== 4. SERP Snippet Preview Card ===== -->
+{% if audit.seo.title is defined %}
 <div class="card" style="animation-delay: 0.24s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Preview Hasil Pencarian</h3>
+            <p class="card__subtitle">Perkiraan tampilan di Google (simulasi)</p>
+        </div>
+    </div>
+    {% set serp_bare = audit.url.split('://')[-1].rstrip('/') %}
+    {% set serp_domain = serp_bare.split('/')[0] %}
+    <div class="serp-preview">
+        <div class="serp-preview__site">
+            <img class="serp-preview__favicon" src="https://www.google.com/s2/favicons?domain={{ serp_domain }}&sz=32" alt="" loading="lazy">
+            <div>
+                <div class="serp-preview__name">{{ serp_domain }}</div>
+                <div class="serp-preview__url">{{ serp_bare | replace('/', ' › ') }}</div>
+            </div>
+        </div>
+        <div class="serp-preview__title">{{ (audit.seo.title or 'Halaman tanpa title tag') | truncate(60, True, ' ...') }}</div>
+        <div class="serp-preview__desc">{{ (audit.seo.meta_description or 'Meta description tidak ditemukan — Google akan mengambil cuplikan sendiri dari konten halaman.') | truncate(160, True, ' ...') }}</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ===== 5. Keyword Consistency Card ===== -->
+{% if audit.seo.keywords and (audit.seo.keywords.single or audit.seo.keywords.phrases) %}
+<div class="card" style="animation-delay: 0.32s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Konsistensi Keyword</h3>
+            <p class="card__subtitle">Keyword hasil ekstraksi konten vs elemen penting halaman</p>
+        </div>
+    </div>
+
+    {% for kw_label, kw_rows in [('Kata Kunci Individual', audit.seo.keywords.single), ('Frasa Kata Kunci', audit.seo.keywords.phrases)] %}
+    {% if kw_rows %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">{{ kw_label }}</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead>
+                <tr><th>Keyword</th><th>Frek.</th><th>Title</th><th>Deskripsi</th><th>Heading</th></tr>
+            </thead>
+            <tbody>
+                {% for row in kw_rows %}
+                <tr>
+                    <td class="keyword-table__term">{{ row.term }}</td>
+                    <td>{{ row.count }}</td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if row.in_title else 'no' }}">{{ '✓' if row.in_title else '✗' }}</span></td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if row.in_description else 'no' }}">{{ '✓' if row.in_description else '✗' }}</span></td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if row.in_headings else 'no' }}">{{ '✓' if row.in_headings else '✗' }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ===== 6. AI Keyword Ranking Estimate Card ===== -->
+{% if audit.keyword_estimates %}
+<div class="card card--ai" style="animation-delay: 0.40s">
+    <div class="card__header">
+        <div class="card__icon card__icon--ai">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Estimasi Ranking Keyword (AI)</h3>
+            <p class="card__subtitle">Estimasi AI — bukan data ranking real</p>
+        </div>
+    </div>
+    {% if audit.keyword_estimates.estimates %}
+    <div class="warning-banner">
+        <span class="warning-banner__icon">⚠️</span>
+        <span>Perkiraan dibuat oleh AI dari konten halaman, bukan data Google Search Console / SERP real.</span>
+    </div>
+    <div style="overflow-x: auto; margin-top: 16px;">
+        <table class="keyword-table">
+            <thead>
+                <tr><th>Keyword</th><th>Peluang</th><th>Estimasi Posisi</th><th>Alasan</th></tr>
+            </thead>
+            <tbody>
+                {% for row in audit.keyword_estimates.estimates %}
+                <tr>
+                    <td class="keyword-table__term">{{ row.keyword }}</td>
+                    <td><span class="kw-opp kw-opp--{{ row.opportunity }}">{{ row.opportunity }}</span></td>
+                    <td>{{ row.position }}</td>
+                    <td>{{ row.reason }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif audit.keyword_estimates.note %}
+    <div class="warning-banner">
+        <span class="warning-banner__icon">ℹ️</span>
+        <span>{{ audit.keyword_estimates.note }}</span>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ===== 7. GEO Score Card ===== -->
+<div class="card" style="animation-delay: 0.48s">
     <div class="card__header">
         <div class="card__icon card__icon--geo">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
@@ -264,8 +374,8 @@
     </div>
 </div>
 
-<!-- ===== 5. AI Recommendation Card ===== -->
-<div class="card card--ai" style="animation-delay: 0.32s">
+<!-- ===== 8. AI Recommendation Card ===== -->
+<div class="card card--ai" style="animation-delay: 0.56s">
     <div class="card__header">
         <div class="card__icon card__icon--ai">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>

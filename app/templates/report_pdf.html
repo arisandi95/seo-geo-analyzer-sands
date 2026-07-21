@@ -237,6 +237,66 @@
         {% endfor %}
     </table>
 
+    <!-- SERP Snippet Preview -->
+    {% if audit.seo.title is defined %}
+    <h2>Preview Hasil Pencarian (Simulasi)</h2>
+    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; max-width: 600px; margin-bottom: 10px;">
+        <div style="color: #006621; font-size: 12px;">{{ audit.url.split('://')[-1].rstrip('/') | replace('/', ' › ') }}</div>
+        <div style="color: #1a0dab; font-size: 16px; margin: 4px 0;">{{ (audit.seo.title or 'Halaman tanpa title tag') | truncate(60, True, ' ...') }}</div>
+        <div style="color: #545454; font-size: 12px;">{{ (audit.seo.meta_description or 'Meta description tidak ditemukan.') | truncate(160, True, ' ...') }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Keyword Consistency -->
+    {% if audit.seo.keywords and (audit.seo.keywords.single or audit.seo.keywords.phrases) %}
+    <h2>Konsistensi Keyword</h2>
+    {% for kw_label, kw_rows in [('Kata Kunci Individual', audit.seo.keywords.single), ('Frasa Kata Kunci', audit.seo.keywords.phrases)] %}
+    {% if kw_rows %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">{{ kw_label }}</h3>
+    <table>
+        <tr>
+            <th>Keyword</th>
+            <th>Frekuensi</th>
+            <th>Title</th>
+            <th>Deskripsi</th>
+            <th>Heading</th>
+        </tr>
+        {% for row in kw_rows %}
+        <tr>
+            <td>{{ row.term }}</td>
+            <td>{{ row.count }}</td>
+            <td>{% if row.in_title %}<span class="status-good">✓</span>{% else %}<span class="status-error">✗</span>{% endif %}</td>
+            <td>{% if row.in_description %}<span class="status-good">✓</span>{% else %}<span class="status-error">✗</span>{% endif %}</td>
+            <td>{% if row.in_headings %}<span class="status-good">✓</span>{% else %}<span class="status-error">✗</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+
+    <!-- AI Keyword Ranking Estimates -->
+    {% if audit.keyword_estimates and audit.keyword_estimates.estimates %}
+    <h2>Estimasi Ranking Keyword (AI)</h2>
+    <p style="font-style: italic; color: #666; font-size: 11px;">Estimasi AI — bukan data ranking real (bukan data Google Search Console / SERP).</p>
+    <table>
+        <tr>
+            <th>Keyword</th>
+            <th>Peluang</th>
+            <th>Estimasi Posisi</th>
+            <th>Alasan</th>
+        </tr>
+        {% for row in audit.keyword_estimates.estimates %}
+        <tr>
+            <td>{{ row.keyword }}</td>
+            <td>{{ row.opportunity }}</td>
+            <td>{{ row.position }}</td>
+            <td>{{ row.reason }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
     <!-- GEO Analysis -->
     <h2>Analisa GEO Readiness</h2>
     <table>
