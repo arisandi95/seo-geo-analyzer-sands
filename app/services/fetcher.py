@@ -101,6 +101,38 @@ async def fetch_url(client: httpx.AsyncClient, url: str, max_size: int = None) -
         return None, None
 
 
+# Response headers worth keeping for technology detection (lowercase keys).
+_TECH_HEADERS = ("server", "x-powered-by", "cf-ray", "x-frame-options", "content-type")
+
+
+async def fetch_url_with_headers(client: httpx.AsyncClient, url: str, max_size: int = None) -> Tuple[Optional[str], Optional[int], dict]:
+    """
+    Like fetch_url, but also returns a small subset of response headers
+    (needed for technology detection on the main HTML document).
+    """
+    if max_size is None:
+        max_size = settings.MAX_CONTENT_SIZE
+    try:
+        async with client.stream("GET", url, follow_redirects=True) as response:
+            headers = {k: response.headers[k] for k in _TECH_HEADERS if k in response.headers}
+            status_code = response.status_code
+            if status_code != 200:
+                return None, status_code, headers
+
+            chunks = []
+            total_size = 0
+            async for chunk in response.aiter_text():
+                total_size += len(chunk.encode("utf-8", errors="replace"))
+                if total_size > max_size:
+                    chunks.append(chunk)
+                    break
+                chunks.append(chunk)
+
+            return "".join(chunks), status_code, headers
+    except (httpx.HTTPError, Exception):
+        return None, None, {}
+
+
 async def fetch_url_cached(client: httpx.AsyncClient, url: str, max_size: int = None) -> Tuple[Optional[str], Optional[int]]:
     """
     Same as fetch_url, but consults the TTL cache first.
@@ -159,7 +191,7 @@ async def fetch_all(url: str) -> dict:
     async with make_client() as client:
         # Fetch HTML, robots.txt, and llms.txt in parallel
         started = time.monotonic()
-        html_task = fetch_url(client, url)
+        html_task = fetch_url_with_headers(client, url)
         robots_task = fetch_url_cached(client, robots_url, max_size=1024 * 1024)  # 1MB limit for robots.txt
         llms_task = fetch_url_cached(client, llms_url, max_size=1024 * 1024)  # 1MB limit for llms.txt
 
@@ -167,14 +199,14 @@ async def fetch_all(url: str) -> dict:
         elapsed = time.monotonic() - started
 
     # Process results
-    html_content, html_status = (None, None)
+    html_content, html_status, html_headers = (None, None, {})
     robots_content, robots_status = (None, None)
     llms_content, llms_status = (None, None)
 
     if isinstance(results[0], Exception):
         errors.append(f"Gagal mengambil halaman: {str(results[0])}")
     else:
-        html_content, html_status = results[0]
+        html_content, html_status, html_headers = results[0]
 
     if isinstance(results[1], Exception):
         errors.append(f"Gagal mengambil robots.txt: {str(results[1])}")
@@ -201,6 +233,7 @@ async def fetch_all(url: str) -> dict:
     return {
         "html": html_content,
         "html_status": html_status,
+        "html_headers": html_headers,
         "html_bytes": len(html_content.encode("utf-8", errors="replace")) if html_content else 0,
         "html_fetch_seconds": round(elapsed, 2),
         "robots": robots_content,

@@ -217,8 +217,492 @@
     </div>
 </div>
 
-<!-- ===== 4. GEO Score Card ===== -->
+<!-- ===== 4. SERP Snippet Preview Card ===== -->
+{% if audit.seo.title is defined %}
 <div class="card" style="animation-delay: 0.24s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Preview Hasil Pencarian</h3>
+            <p class="card__subtitle">Perkiraan tampilan di Google (simulasi)</p>
+        </div>
+    </div>
+    {% set serp_bare = audit.url.split('://')[-1].rstrip('/') %}
+    {% set serp_domain = serp_bare.split('/')[0] %}
+    <div class="serp-preview">
+        <div class="serp-preview__site">
+            <img class="serp-preview__favicon" src="https://www.google.com/s2/favicons?domain={{ serp_domain }}&sz=32" alt="" loading="lazy">
+            <div>
+                <div class="serp-preview__name">{{ serp_domain }}</div>
+                <div class="serp-preview__url">{{ serp_bare | replace('/', ' › ') }}</div>
+            </div>
+        </div>
+        <div class="serp-preview__title">{{ (audit.seo.title or 'Halaman tanpa title tag') | truncate(60, True, ' ...') }}</div>
+        <div class="serp-preview__desc">{{ (audit.seo.meta_description or 'Meta description tidak ditemukan — Google akan mengambil cuplikan sendiri dari konten halaman.') | truncate(160, True, ' ...') }}</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ===== 5. Keyword Consistency Card ===== -->
+{% if audit.seo.keywords and (audit.seo.keywords.single or audit.seo.keywords.phrases) %}
+<div class="card" style="animation-delay: 0.32s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Konsistensi Keyword</h3>
+            <p class="card__subtitle">Keyword hasil ekstraksi konten vs elemen penting halaman</p>
+        </div>
+    </div>
+
+    {% for kw_label, kw_rows in [('Kata Kunci Individual', audit.seo.keywords.single), ('Frasa Kata Kunci', audit.seo.keywords.phrases)] %}
+    {% if kw_rows %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">{{ kw_label }}</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead>
+                <tr><th>Keyword</th><th>Frek.</th><th>Title</th><th>Deskripsi</th><th>Heading</th></tr>
+            </thead>
+            <tbody>
+                {% for row in kw_rows %}
+                <tr>
+                    <td class="keyword-table__term">{{ row.term }}</td>
+                    <td>{{ row.count }}</td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if row.in_title else 'no' }}">{{ '✓' if row.in_title else '✗' }}</span></td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if row.in_description else 'no' }}">{{ '✓' if row.in_description else '✗' }}</span></td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if row.in_headings else 'no' }}">{{ '✓' if row.in_headings else '✗' }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ===== 6. AI Keyword Ranking Estimate Card ===== -->
+{% if audit.keyword_estimates %}
+<div class="card card--ai" style="animation-delay: 0.40s">
+    <div class="card__header">
+        <div class="card__icon card__icon--ai">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Estimasi Ranking Keyword (AI)</h3>
+            <p class="card__subtitle">Estimasi AI — bukan data ranking real</p>
+        </div>
+    </div>
+    {% if audit.keyword_estimates.estimates %}
+    <div class="warning-banner">
+        <span class="warning-banner__icon">⚠️</span>
+        <span>Perkiraan dibuat oleh AI dari konten halaman, bukan data Google Search Console / SERP real.</span>
+    </div>
+    <div style="overflow-x: auto; margin-top: 16px;">
+        <table class="keyword-table">
+            <thead>
+                <tr><th>Keyword</th><th>Peluang</th><th>Estimasi Posisi</th><th>Alasan</th></tr>
+            </thead>
+            <tbody>
+                {% for row in audit.keyword_estimates.estimates %}
+                <tr>
+                    <td class="keyword-table__term">{{ row.keyword }}</td>
+                    <td><span class="kw-opp kw-opp--{{ row.opportunity }}">{{ row.opportunity }}</span></td>
+                    <td>{{ row.position }}</td>
+                    <td>{{ row.reason }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif audit.keyword_estimates.note %}
+    <div class="warning-banner">
+        <span class="warning-banner__icon">ℹ️</span>
+        <span>{{ audit.keyword_estimates.note }}</span>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ===== 7. On-Page Link Structure Card ===== -->
+{% if audit.seo.link_structure %}
+<div class="card" style="animation-delay: 0.48s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Struktur Link On-Page</h3>
+            <p class="card__subtitle">Peta link internal, eksternal, dan anchor di halaman ini</p>
+        </div>
+    </div>
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-item__value">{{ audit.seo.link_structure.total }}</div>
+            <div class="info-item__label">Total Link</div>
+        </div>
+        <div class="info-item">
+            <div class="info-item__value">{{ audit.seo.link_structure.internal }}</div>
+            <div class="info-item__label">Internal</div>
+        </div>
+        <div class="info-item">
+            <div class="info-item__value">{{ audit.seo.link_structure.external }}</div>
+            <div class="info-item__label">External</div>
+        </div>
+        <div class="info-item">
+            <div class="info-item__value">{{ audit.seo.link_structure.nofollow }}</div>
+            <div class="info-item__label">Nofollow</div>
+        </div>
+    </div>
+    {% if audit.seo.link_structure.top_anchors %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Anchor Teratas (On-Page)</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead>
+                <tr><th>Anchor Text</th><th>Jumlah</th></tr>
+            </thead>
+            <tbody>
+                {% for row in audit.seo.link_structure.top_anchors %}
+                <tr>
+                    <td class="keyword-table__term">{{ row.anchor }}</td>
+                    <td>{{ row.count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ===== 8. Friendly Links Card ===== -->
+{% if audit.seo.friendly_links %}
+{% set fl = audit.seo.friendly_links %}
+<div class="card" style="animation-delay: 0.56s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Friendly Links</h3>
+            <p class="card__subtitle">Keterbacaan URL internal (tanpa parameter, underscore, atau URL panjang)</p>
+        </div>
+    </div>
+    <ul class="check-list">
+        {% if fl.checked == 0 %}
+        {% set fl_status = 'warning' %}
+        {% else %}
+        {% set fl_pct = (fl.friendly / fl.checked * 100) | round | int %}
+        {% set fl_status = 'good' if fl_pct >= 80 else ('warning' if fl_pct >= 50 else 'error') %}
+        {% endif %}
+        <li class="check-item">
+            <span class="check-item__badge check-item__badge--{{ fl_status }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    {% if fl_status == 'good' %}<polyline points="20 6 9 17 4 12"/>
+                    {% elif fl_status == 'warning' %}<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    {% else %}<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>{% endif %}
+                </svg>
+            </span>
+            <div class="check-item__content">
+                <div class="check-item__name">URL Internal Friendly</div>
+                <div class="check-item__message">
+                    {% if fl.checked == 0 %}
+                    Tidak ada link internal unik yang bisa dicek di halaman ini.
+                    {% else %}
+                    {{ fl.friendly }} dari {{ fl.checked }} URL internal unik ({{ fl_pct }}%) tergolong friendly — mudah dibaca manusia dan mesin pencari.
+                    {% endif %}
+                </div>
+                {% if fl.unfriendly_examples %}
+                <div class="check-item__detail">Contoh tidak friendly: {{ fl.unfriendly_examples | join(' , ') }}</div>
+                {% endif %}
+            </div>
+        </li>
+    </ul>
+</div>
+{% endif %}
+
+<!-- ===== 9. AI Backlink Profile Estimate Card ===== -->
+{% if audit.backlink_estimates %}
+<div class="card card--ai" style="animation-delay: 0.64s">
+    <div class="card__header">
+        <div class="card__icon card__icon--ai">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Estimasi Profil Backlink (AI)</h3>
+            <p class="card__subtitle">Estimasi AI — bukan data backlink real</p>
+        </div>
+    </div>
+    {% if audit.backlink_estimates.available %}
+    <div class="warning-banner">
+        <span class="warning-banner__icon">⚠️</span>
+        <span>Perkiraan kualitatif dibuat AI dari konten halaman — BUKAN data backlink real (bukan Ahrefs/Moz/Search Console). Gunakan hanya sebagai gambaran awal.</span>
+    </div>
+    {% if audit.backlink_estimates.summary %}
+    <div style="margin-top: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span class="kw-opp kw-opp--{{ audit.backlink_estimates.summary.level }}">Potensi {{ audit.backlink_estimates.summary.level }}</span>
+        <span style="font-size: 0.8125rem; color: var(--color-text-secondary);">{{ audit.backlink_estimates.summary.reason }}</span>
+    </div>
+    {% endif %}
+    {% if audit.backlink_estimates.top_pages %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Halaman Berpeluang Menarik Backlink</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead><tr><th>Halaman</th><th>Alasan</th></tr></thead>
+            <tbody>
+                {% for row in audit.backlink_estimates.top_pages %}
+                <tr>
+                    <td class="keyword-table__term">{{ row.page }}</td>
+                    <td>{{ row.reason }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if audit.backlink_estimates.top_anchors %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Anchor Text yang Disarankan</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead><tr><th>Anchor</th><th>Tipe</th></tr></thead>
+            <tbody>
+                {% for row in audit.backlink_estimates.top_anchors %}
+                <tr>
+                    <td class="keyword-table__term">{{ row.anchor }}</td>
+                    <td>{{ row.type }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if audit.backlink_estimates.geographies %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Estimasi Geografi Referring Domain</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead><tr><th>Negara</th><th>Porsi</th></tr></thead>
+            <tbody>
+                {% for row in audit.backlink_estimates.geographies %}
+                <tr>
+                    <td class="keyword-table__term">{{ row.country }}</td>
+                    <td>{{ row.share }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% elif audit.backlink_estimates.note %}
+    <div class="warning-banner">
+        <span class="warning-banner__icon">ℹ️</span>
+        <span>{{ audit.backlink_estimates.note }}</span>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ===== 10. Device Rendering & Mobile Viewport Card ===== -->
+<div class="card" style="animation-delay: 0.72s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Device Rendering</h3>
+            <p class="card__subtitle">Pratinjau halaman di mobile, tablet, dan desktop</p>
+        </div>
+    </div>
+
+    {% if audit.seo.viewport is defined %}
+    {% set vp = audit.seo.viewport %}
+    {% set vp_status = 'good' if (vp.present and vp.has_device_width) else ('warning' if vp.present else 'error') %}
+    <ul class="check-list" style="margin-bottom: 16px;">
+        <li class="check-item">
+            <span class="check-item__badge check-item__badge--{{ vp_status }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    {% if vp_status == 'good' %}<polyline points="20 6 9 17 4 12"/>
+                    {% elif vp_status == 'warning' %}<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    {% else %}<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>{% endif %}
+                </svg>
+            </span>
+            <div class="check-item__content">
+                <div class="check-item__name">Mobile Viewport</div>
+                <div class="check-item__message">
+                    {% if vp.present and vp.has_device_width %}
+                    Meta viewport menggunakan width=device-width{% if vp.has_initial_scale %} dan initial-scale{% endif %} — halaman responsive di perangkat mobile.
+                    {% elif vp.present %}
+                    Meta viewport ada tapi tanpa width=device-width — rendering mobile mungkin tidak optimal.
+                    {% else %}
+                    Meta viewport tidak ditemukan — halaman akan tampil sebagai versi desktop yang diperkecil di mobile.
+                    {% endif %}
+                </div>
+                {% if vp.content %}<div class="check-item__detail">{{ vp.content }}</div>{% endif %}
+            </div>
+        </li>
+    </ul>
+    {% endif %}
+
+    <div class="device-frames">
+        <div class="device-frame device-frame--mobile">
+            <div class="device-frame__viewport"><iframe src="{{ audit.url }}" loading="lazy" referrerpolicy="no-referrer" title="Pratinjau mobile"></iframe></div>
+            <div class="device-frame__label">Mobile · 375px</div>
+        </div>
+        <div class="device-frame device-frame--tablet">
+            <div class="device-frame__viewport"><iframe src="{{ audit.url }}" loading="lazy" referrerpolicy="no-referrer" title="Pratinjau tablet"></iframe></div>
+            <div class="device-frame__label">Tablet · 768px</div>
+        </div>
+        <div class="device-frame device-frame--desktop">
+            <div class="device-frame__viewport"><iframe src="{{ audit.url }}" loading="lazy" referrerpolicy="no-referrer" title="Pratinjau desktop"></iframe></div>
+            <div class="device-frame__label">Desktop · 1280px</div>
+        </div>
+    </div>
+    <p style="font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 12px;">Jika pratinjau kosong, situs kemungkinan memblokir embedding (X-Frame-Options / CSP frame-ancestors).</p>
+</div>
+
+<!-- ===== 11. PageSpeed & Core Web Vitals Card ===== -->
+{% if audit.pagespeed %}
+<div class="card" style="animation-delay: 0.80s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">PageSpeed Insights &amp; Core Web Vitals</h3>
+            <p class="card__subtitle">Data Google (Lighthouse{% if audit.pagespeed.field %} + Chrome UX Report{% endif %}) — strategi mobile</p>
+        </div>
+    </div>
+    {% if audit.pagespeed.available %}
+    {% if audit.pagespeed.performance_score is not none %}
+    {% set ps = audit.pagespeed.performance_score %}
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-item__value" style="color: var(--color-{{ 'success' if ps >= 90 else ('warning' if ps >= 50 else 'error') }});">{{ ps }}</div>
+            <div class="info-item__label">Skor Performa (Mobile)</div>
+        </div>
+        {% if audit.pagespeed.field and audit.pagespeed.field.overall %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1.125rem;">{{ audit.pagespeed.field.overall }}</div>
+            <div class="info-item__label">CWV Pengguna Real (CrUX)</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% if audit.pagespeed.field %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Core Web Vitals — Data Pengguna Real</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead><tr><th>Metrik</th><th>Nilai (p75)</th><th>Kategori</th></tr></thead>
+            <tbody>
+                {% for m in audit.pagespeed.field.metrics %}
+                <tr>
+                    <td class="keyword-table__term">{{ m.name }}</td>
+                    <td>{{ m.value }}</td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if m.status == 'good' else 'no' }}">{{ m.category }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if audit.pagespeed.lab %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Lab Metrics (Lighthouse)</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead><tr><th>Metrik</th><th>Nilai</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for m in audit.pagespeed.lab %}
+                <tr>
+                    <td class="keyword-table__term">{{ m.name }}</td>
+                    <td>{{ m.value }}</td>
+                    <td><span class="kw-mark kw-mark--{{ 'yes' if m.status == 'good' else 'no' }}">{{ '✓' if m.status == 'good' else ('!' if m.status == 'warning' else '✗') }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% elif audit.pagespeed.note %}
+    <div class="warning-banner">
+        <span class="warning-banner__icon">ℹ️</span>
+        <span>{{ audit.pagespeed.note }}</span>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ===== 12. Technology Results Card ===== -->
+{% if audit.technology %}
+<div class="card" style="animation-delay: 0.88s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Teknologi Website</h3>
+            <p class="card__subtitle">Terdeteksi dari kode halaman dan response header</p>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        {% if audit.technology.server %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1rem;">{{ audit.technology.server }}</div>
+            <div class="info-item__label">Web Server</div>
+        </div>
+        {% endif %}
+        {% if audit.technology.powered_by %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1rem;">{{ audit.technology.powered_by }}</div>
+            <div class="info-item__label">Powered By</div>
+        </div>
+        {% endif %}
+        {% if audit.technology.ip %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1rem;">{{ audit.technology.ip }}</div>
+            <div class="info-item__label">IP Server</div>
+        </div>
+        {% endif %}
+        {% if audit.technology.charset %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1rem;">{{ audit.technology.charset }}</div>
+            <div class="info-item__label">Charset</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if audit.technology.generator %}
+    <div class="warning-banner" style="margin-top: 16px;">
+        <span class="warning-banner__icon">🏷️</span>
+        <span>Meta generator: <strong>{{ audit.technology.generator }}</strong></span>
+    </div>
+    {% endif %}
+
+    {% if audit.technology.detected %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Teknologi Terdeteksi ({{ audit.technology.total }})</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead><tr><th>Kategori</th><th>Teknologi</th></tr></thead>
+            <tbody>
+                {% for g in audit.technology.detected %}
+                <tr>
+                    <td class="keyword-table__term">{{ g.category }}</td>
+                    <td>{{ g.names | join(', ') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="font-size: 0.8125rem; color: var(--color-text-secondary); margin-top: 16px;">Tidak ada teknologi populer yang terdeteksi dari signature — situs mungkin custom build atau di-render sepenuhnya via JavaScript.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ===== 13. GEO Score Card ===== -->
+<div class="card" style="animation-delay: 0.96s">
     <div class="card__header">
         <div class="card__icon card__icon--geo">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
@@ -264,8 +748,8 @@
     </div>
 </div>
 
-<!-- ===== 5. AI Recommendation Card ===== -->
-<div class="card card--ai" style="animation-delay: 0.32s">
+<!-- ===== 14. AI Recommendation Card ===== -->
+<div class="card card--ai" style="animation-delay: 1.04s">
     <div class="card__header">
         <div class="card__icon card__icon--ai">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>

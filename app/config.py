@@ -29,5 +29,8 @@ class Settings:
     RATE_LIMIT_MULTI_PAGE: str = os.getenv("RATE_LIMIT_MULTI_PAGE", "3/minute")
     AI_STREAM_TIMEOUT_SECONDS: int = int(os.getenv("AI_STREAM_TIMEOUT_SECONDS", "90"))
 
+    # PageSpeed Insights — opsional; tanpa key tetap jalan dengan kuota kecil
+    PAGESPEED_API_KEY: str = os.getenv("PAGESPEED_API_KEY", "")
+
 
 settings = Settings()
