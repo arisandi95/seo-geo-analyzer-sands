@@ -2,25 +2,31 @@
 Analysis route — POST /analyze endpoint.
 """
 import asyncio
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
-from app.services.fetcher import fetch_all
+from app.services.fetcher import fetch_all, UnsafeURLError
 from app.services.robots_checker import analyze_robots, get_robots_not_found
 from app.services.sitemap_checker import check_sitemap
 from app.services.seo_analyzer import analyze_seo
 from app.services.geo_analyzer import analyze_geo
 from app.services.ai_advisor import get_ai_recommendations
+from app.services.history_service import save_analysis
+from app.config import settings
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/analyze")
+@limiter.limit("10/minute")
 async def analyze(request: Request, url: str = Form(...)):
     """
     Main analysis endpoint. Fetches target URL resources in parallel,
-    runs all analyzers, then gets AI recommendations.
+    runs all analyzers, then gets AI recommendations, and saves to history.
     Returns partial HTML for HTMX swap.
     """
     # Validate and normalize URL
@@ -35,7 +41,13 @@ async def analyze(request: Request, url: str = Form(...)):
         url = f"https://{url}"
 
     # Step 1: Fetch all resources in parallel
-    fetch_results = await fetch_all(url)
+    try:
+        fetch_results = await fetch_all(url)
+    except UnsafeURLError as e:
+        return templates.TemplateResponse(request, "partials/result.html", {
+            "request": request,
+            "error": str(e),
+        })
 
     html_content = fetch_results["html"]
     robots_content = fetch_results["robots"]
@@ -80,9 +92,13 @@ async def analyze(request: Request, url: str = Form(...)):
     # Get AI recommendation (non-blocking — errors show fallback message)
     ai_recommendation = await get_ai_recommendations(audit_data)
 
+    # Step 6: Save analysis to history (non-blocking — errors logged but don't break flow)
+    record_id = await save_analysis(url, audit_data, ai_recommendation=ai_recommendation)
+
     return templates.TemplateResponse(request, "partials/result.html", {
         "request": request,
         "audit": audit_data,
         "ai_recommendation": ai_recommendation,
         "fetch_errors": fetch_errors,
+        "record_id": record_id,
     })
