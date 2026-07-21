@@ -633,8 +633,76 @@
 </div>
 {% endif %}
 
-<!-- ===== 12. GEO Score Card ===== -->
+<!-- ===== 12. Technology Results Card ===== -->
+{% if audit.technology %}
 <div class="card" style="animation-delay: 0.88s">
+    <div class="card__header">
+        <div class="card__icon card__icon--seo">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div>
+            <h3 class="card__title">Teknologi Website</h3>
+            <p class="card__subtitle">Terdeteksi dari kode halaman dan response header</p>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        {% if audit.technology.server %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1rem;">{{ audit.technology.server }}</div>
+            <div class="info-item__label">Web Server</div>
+        </div>
+        {% endif %}
+        {% if audit.technology.powered_by %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1rem;">{{ audit.technology.powered_by }}</div>
+            <div class="info-item__label">Powered By</div>
+        </div>
+        {% endif %}
+        {% if audit.technology.ip %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1rem;">{{ audit.technology.ip }}</div>
+            <div class="info-item__label">IP Server</div>
+        </div>
+        {% endif %}
+        {% if audit.technology.charset %}
+        <div class="info-item">
+            <div class="info-item__value" style="font-size: 1rem;">{{ audit.technology.charset }}</div>
+            <div class="info-item__label">Charset</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if audit.technology.generator %}
+    <div class="warning-banner" style="margin-top: 16px;">
+        <span class="warning-banner__icon">🏷️</span>
+        <span>Meta generator: <strong>{{ audit.technology.generator }}</strong></span>
+    </div>
+    {% endif %}
+
+    {% if audit.technology.detected %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 12px;">Teknologi Terdeteksi ({{ audit.technology.total }})</h4>
+    <div style="overflow-x: auto;">
+        <table class="keyword-table">
+            <thead><tr><th>Kategori</th><th>Teknologi</th></tr></thead>
+            <tbody>
+                {% for g in audit.technology.detected %}
+                <tr>
+                    <td class="keyword-table__term">{{ g.category }}</td>
+                    <td>{{ g.names | join(', ') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="font-size: 0.8125rem; color: var(--color-text-secondary); margin-top: 16px;">Tidak ada teknologi populer yang terdeteksi dari signature — situs mungkin custom build atau di-render sepenuhnya via JavaScript.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ===== 13. GEO Score Card ===== -->
+<div class="card" style="animation-delay: 0.96s">
     <div class="card__header">
         <div class="card__icon card__icon--geo">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
@@ -680,8 +748,8 @@
     </div>
 </div>
 
-<!-- ===== 13. AI Recommendation Card ===== -->
-<div class="card card--ai" style="animation-delay: 0.96s">
+<!-- ===== 14. AI Recommendation Card ===== -->
+<div class="card card--ai" style="animation-delay: 1.04s">
     <div class="card__header">
         <div class="card__icon card__icon--ai">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>

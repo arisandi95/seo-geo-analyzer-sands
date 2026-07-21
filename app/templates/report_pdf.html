@@ -463,6 +463,37 @@
     {% endif %}
     {% endif %}
 
+    <!-- Technology Results -->
+    {% if audit.technology %}
+    <h2>Teknologi Website</h2>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+        </tr>
+        {% if audit.technology.server %}<tr><td>Web Server</td><td>{{ audit.technology.server }}</td></tr>{% endif %}
+        {% if audit.technology.powered_by %}<tr><td>Powered By</td><td>{{ audit.technology.powered_by }}</td></tr>{% endif %}
+        {% if audit.technology.ip %}<tr><td>IP Server</td><td>{{ audit.technology.ip }}</td></tr>{% endif %}
+        {% if audit.technology.charset %}<tr><td>Charset</td><td>{{ audit.technology.charset }}</td></tr>{% endif %}
+        {% if audit.technology.generator %}<tr><td>Meta Generator</td><td>{{ audit.technology.generator }}</td></tr>{% endif %}
+    </table>
+    {% if audit.technology.detected %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Teknologi Terdeteksi ({{ audit.technology.total }})</h3>
+    <table>
+        <tr>
+            <th>Kategori</th>
+            <th>Teknologi</th>
+        </tr>
+        {% for g in audit.technology.detected %}
+        <tr>
+            <td>{{ g.category }}</td>
+            <td>{{ g.names | join(', ') }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endif %}
+
     <!-- GEO Analysis -->
     <h2>Analisa GEO Readiness</h2>
     <table>
