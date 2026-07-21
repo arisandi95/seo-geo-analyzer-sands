@@ -212,11 +212,11 @@
         </tr>
         <tr>
             <td>Total URLs</td>
-            <td>{{ audit.sitemap.url_count }}</td>
+            <td>{{ audit.sitemap.total_urls }}</td>
         </tr>
         <tr>
             <td>Format</td>
-            <td>{{ audit.sitemap.format or "N/A" }}</td>
+            <td>{{ audit.sitemap.type or "N/A" }}</td>
         </tr>
     </table>
 
@@ -236,6 +236,263 @@
         </tr>
         {% endfor %}
     </table>
+
+    <!-- SERP Snippet Preview -->
+    {% if audit.seo.title is defined %}
+    <h2>Preview Hasil Pencarian (Simulasi)</h2>
+    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; max-width: 600px; margin-bottom: 10px;">
+        <div style="color: #006621; font-size: 12px;">{{ audit.url.split('://')[-1].rstrip('/') | replace('/', ' › ') }}</div>
+        <div style="color: #1a0dab; font-size: 16px; margin: 4px 0;">{{ (audit.seo.title or 'Halaman tanpa title tag') | truncate(60, True, ' ...') }}</div>
+        <div style="color: #545454; font-size: 12px;">{{ (audit.seo.meta_description or 'Meta description tidak ditemukan.') | truncate(160, True, ' ...') }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Keyword Consistency -->
+    {% if audit.seo.keywords and (audit.seo.keywords.single or audit.seo.keywords.phrases) %}
+    <h2>Konsistensi Keyword</h2>
+    {% for kw_label, kw_rows in [('Kata Kunci Individual', audit.seo.keywords.single), ('Frasa Kata Kunci', audit.seo.keywords.phrases)] %}
+    {% if kw_rows %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">{{ kw_label }}</h3>
+    <table>
+        <tr>
+            <th>Keyword</th>
+            <th>Frekuensi</th>
+            <th>Title</th>
+            <th>Deskripsi</th>
+            <th>Heading</th>
+        </tr>
+        {% for row in kw_rows %}
+        <tr>
+            <td>{{ row.term }}</td>
+            <td>{{ row.count }}</td>
+            <td>{% if row.in_title %}<span class="status-good">✓</span>{% else %}<span class="status-error">✗</span>{% endif %}</td>
+            <td>{% if row.in_description %}<span class="status-good">✓</span>{% else %}<span class="status-error">✗</span>{% endif %}</td>
+            <td>{% if row.in_headings %}<span class="status-good">✓</span>{% else %}<span class="status-error">✗</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+
+    <!-- AI Keyword Ranking Estimates -->
+    {% if audit.keyword_estimates and audit.keyword_estimates.estimates %}
+    <h2>Estimasi Ranking Keyword (AI)</h2>
+    <p style="font-style: italic; color: #666; font-size: 11px;">Estimasi AI — bukan data ranking real (bukan data Google Search Console / SERP).</p>
+    <table>
+        <tr>
+            <th>Keyword</th>
+            <th>Peluang</th>
+            <th>Estimasi Posisi</th>
+            <th>Alasan</th>
+        </tr>
+        {% for row in audit.keyword_estimates.estimates %}
+        <tr>
+            <td>{{ row.keyword }}</td>
+            <td>{{ row.opportunity }}</td>
+            <td>{{ row.position }}</td>
+            <td>{{ row.reason }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <!-- On-Page Link Structure -->
+    {% if audit.seo.link_structure %}
+    <h2>Struktur Link On-Page</h2>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+        </tr>
+        <tr><td>Total Link</td><td>{{ audit.seo.link_structure.total }}</td></tr>
+        <tr><td>Internal</td><td>{{ audit.seo.link_structure.internal }}</td></tr>
+        <tr><td>External</td><td>{{ audit.seo.link_structure.external }}</td></tr>
+        <tr><td>Nofollow</td><td>{{ audit.seo.link_structure.nofollow }}</td></tr>
+        <tr><td>Dofollow</td><td>{{ audit.seo.link_structure.dofollow }}</td></tr>
+    </table>
+    {% if audit.seo.link_structure.top_anchors %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Anchor Teratas (On-Page)</h3>
+    <table>
+        <tr>
+            <th>Anchor Text</th>
+            <th>Jumlah</th>
+        </tr>
+        {% for row in audit.seo.link_structure.top_anchors %}
+        <tr>
+            <td>{{ row.anchor }}</td>
+            <td>{{ row.count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endif %}
+
+    <!-- Friendly Links -->
+    {% if audit.seo.friendly_links %}
+    <h2>Friendly Links</h2>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+        </tr>
+        <tr><td>URL internal unik dicek</td><td>{{ audit.seo.friendly_links.checked }}</td></tr>
+        <tr><td>Friendly</td><td>{{ audit.seo.friendly_links.friendly }}</td></tr>
+        <tr><td>Tidak friendly</td><td>{{ audit.seo.friendly_links.checked - audit.seo.friendly_links.friendly }}</td></tr>
+        {% if audit.seo.friendly_links.unfriendly_examples %}
+        <tr><td>Contoh tidak friendly</td><td>{{ audit.seo.friendly_links.unfriendly_examples | join(' , ') }}</td></tr>
+        {% endif %}
+    </table>
+    {% endif %}
+
+    <!-- AI Backlink Profile Estimate -->
+    {% if audit.backlink_estimates and audit.backlink_estimates.available %}
+    <h2>Estimasi Profil Backlink (AI)</h2>
+    <p style="font-style: italic; color: #666; font-size: 11px;">Perkiraan kualitatif dari AI — BUKAN data backlink real (bukan Ahrefs/Moz/Search Console).</p>
+    {% if audit.backlink_estimates.summary %}
+    <p style="font-size: 12px;"><strong>Potensi: {{ audit.backlink_estimates.summary.level }}</strong> — {{ audit.backlink_estimates.summary.reason }}</p>
+    {% endif %}
+    {% if audit.backlink_estimates.top_pages %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Halaman Berpeluang Menarik Backlink</h3>
+    <table>
+        <tr>
+            <th>Halaman</th>
+            <th>Alasan</th>
+        </tr>
+        {% for row in audit.backlink_estimates.top_pages %}
+        <tr>
+            <td>{{ row.page }}</td>
+            <td>{{ row.reason }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% if audit.backlink_estimates.top_anchors %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Anchor Text yang Disarankan</h3>
+    <table>
+        <tr>
+            <th>Anchor</th>
+            <th>Tipe</th>
+        </tr>
+        {% for row in audit.backlink_estimates.top_anchors %}
+        <tr>
+            <td>{{ row.anchor }}</td>
+            <td>{{ row.type }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% if audit.backlink_estimates.geographies %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Estimasi Geografi Referring Domain</h3>
+    <table>
+        <tr>
+            <th>Negara</th>
+            <th>Porsi</th>
+        </tr>
+        {% for row in audit.backlink_estimates.geographies %}
+        <tr>
+            <td>{{ row.country }}</td>
+            <td>{{ row.share }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endif %}
+
+    <!-- Usability: Mobile Viewport + PageSpeed & Core Web Vitals -->
+    {% if audit.seo.viewport is defined %}
+    <h2>Usability — Mobile Viewport</h2>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+        </tr>
+        <tr>
+            <td>Meta viewport</td>
+            <td>{% if audit.seo.viewport.present %}<span class="status-good">✓ Ada</span>{% else %}<span class="status-error">✗ Tidak ada</span>{% endif %}</td>
+        </tr>
+        <tr>
+            <td>width=device-width</td>
+            <td>{% if audit.seo.viewport.has_device_width %}<span class="status-good">✓</span>{% else %}<span class="status-error">✗</span>{% endif %}</td>
+        </tr>
+        {% if audit.seo.viewport.content %}
+        <tr><td>Isi</td><td>{{ audit.seo.viewport.content }}</td></tr>
+        {% endif %}
+    </table>
+    <p style="font-size: 11px; color: #666;">Pratinjau device rendering hanya tersedia di versi web.</p>
+    {% endif %}
+
+    {% if audit.pagespeed and audit.pagespeed.available %}
+    <h2>PageSpeed Insights &amp; Core Web Vitals (Mobile)</h2>
+    {% if audit.pagespeed.performance_score is not none %}
+    <p style="font-size: 12px;"><strong>Skor Performa: {{ audit.pagespeed.performance_score }}/100</strong>{% if audit.pagespeed.field and audit.pagespeed.field.overall %} — Penilaian CWV pengguna real: {{ audit.pagespeed.field.overall }}{% endif %}</p>
+    {% endif %}
+    {% if audit.pagespeed.field %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Core Web Vitals — Data Pengguna Real (CrUX)</h3>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai (p75)</th>
+            <th>Kategori</th>
+        </tr>
+        {% for m in audit.pagespeed.field.metrics %}
+        <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ m.value }}</td>
+            <td><span class="status-{{ m.status }}">{{ m.category }}</span></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% if audit.pagespeed.lab %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Lab Metrics (Lighthouse)</h3>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+            <th>Status</th>
+        </tr>
+        {% for m in audit.pagespeed.lab %}
+        <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ m.value }}</td>
+            <td><span class="status-{{ m.status }}">{{ m.status | upper }}</span></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endif %}
+
+    <!-- Technology Results -->
+    {% if audit.technology %}
+    <h2>Teknologi Website</h2>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+        </tr>
+        {% if audit.technology.server %}<tr><td>Web Server</td><td>{{ audit.technology.server }}</td></tr>{% endif %}
+        {% if audit.technology.powered_by %}<tr><td>Powered By</td><td>{{ audit.technology.powered_by }}</td></tr>{% endif %}
+        {% if audit.technology.ip %}<tr><td>IP Server</td><td>{{ audit.technology.ip }}</td></tr>{% endif %}
+        {% if audit.technology.charset %}<tr><td>Charset</td><td>{{ audit.technology.charset }}</td></tr>{% endif %}
+        {% if audit.technology.generator %}<tr><td>Meta Generator</td><td>{{ audit.technology.generator }}</td></tr>{% endif %}
+    </table>
+    {% if audit.technology.detected %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Teknologi Terdeteksi ({{ audit.technology.total }})</h3>
+    <table>
+        <tr>
+            <th>Kategori</th>
+            <th>Teknologi</th>
+        </tr>
+        {% for g in audit.technology.detected %}
+        <tr>
+            <td>{{ g.category }}</td>
+            <td>{{ g.names | join(', ') }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endif %}
 
     <!-- GEO Analysis -->
     <h2>Analisa GEO Readiness</h2>

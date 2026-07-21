@@ -19,7 +19,7 @@ templates = Jinja2Templates(directory="app/templates")
 try:
     from weasyprint import HTML, CSS
     WEASYPRINT_AVAILABLE = True
-except ImportError:
+except Exception:  # on Windows without GTK, weasyprint raises OSError (missing DLLs), not ImportError
     WEASYPRINT_AVAILABLE = False
     logger.warning("WeasyPrint not available. PDF export will use print-CSS fallback.")
 

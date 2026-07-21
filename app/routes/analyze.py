@@ -12,7 +12,9 @@ from app.services.robots_checker import analyze_robots, get_robots_not_found
 from app.services.sitemap_checker import check_sitemap
 from app.services.seo_analyzer import analyze_seo
 from app.services.geo_analyzer import analyze_geo
-from app.services.ai_advisor import get_ai_recommendations
+from app.services.ai_advisor import get_ai_recommendations, get_keyword_estimates, get_backlink_estimates
+from app.services.usability_checker import get_pagespeed_data
+from app.services.technology_checker import analyze_technology
 from app.services.history_service import save_analysis
 from app.config import settings
 
@@ -80,6 +82,9 @@ async def analyze(request: Request, url: str = Form(...)):
         seo_result = {"score": 0, "checks": [], "word_count": 0, "internal_links": 0, "external_links": 0}
         geo_result = {"score": 0, "checks": []}
 
+    # Step 4b: Technology detection (HTML signatures + response headers + IP)
+    technology_result = await analyze_technology(html_content, fetch_results.get("html_headers", {}), url)
+
     # Step 5: Prepare audit data and get AI recommendations
     audit_data = {
         "url": url,
@@ -87,10 +92,20 @@ async def analyze(request: Request, url: str = Form(...)):
         "sitemap": sitemap_result,
         "seo": seo_result,
         "geo": geo_result,
+        "technology": technology_result,
     }
 
-    # Get AI recommendation (non-blocking — errors show fallback message)
-    ai_recommendation = await get_ai_recommendations(audit_data)
+    # Get AI recommendation + keyword ranking estimates in parallel
+    # (both never raise by contract — errors become fallback messages)
+    ai_recommendation, keyword_estimates, backlink_estimates, pagespeed = await asyncio.gather(
+        get_ai_recommendations(audit_data),
+        get_keyword_estimates(audit_data),
+        get_backlink_estimates(audit_data),
+        get_pagespeed_data(url),
+    )
+    audit_data["keyword_estimates"] = keyword_estimates
+    audit_data["backlink_estimates"] = backlink_estimates
+    audit_data["pagespeed"] = pagespeed
 
     # Step 6: Save analysis to history (non-blocking — errors logged but don't break flow)
     record_id = await save_analysis(url, audit_data, ai_recommendation=ai_recommendation)
