@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan SEO & GEO — {{ record.domain }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        header {
+            border-bottom: 3px solid #007AFF;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+        header p {
+            font-size: 14px;
+            color: #666;
+        }
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            font-size: 13px;
+            padding: 15px;
+            background: #f5f5f5;
+        }
+        .meta-item {
+            flex: 1;
+        }
+        .meta-label {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .meta-value {
+            color: #333;
+        }
+        .score-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        .score-box {
+            flex: 1;
+            border: 2px solid #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+        }
+        .score-box h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .score-number {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .score-seo { color: #34C759; }
+        .score-geo { color: #007AFF; }
+        h2 {
+            font-size: 18px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #007AFF;
+            padding-left: 10px;
+            page-break-inside: avoid;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        th {
+            background: #007AFF;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+            font-size: 13px;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .status-good {
+            color: #34C759;
+            font-weight: bold;
+        }
+        .status-warning {
+            color: #FF9500;
+            font-weight: bold;
+        }
+        .status-error {
+            color: #FF3B30;
+            font-weight: bold;
+        }
+        .checklist {
+            margin: 15px 0;
+        }
+        .check-item {
+            display: flex;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            text-align: center;
+        }
+        .ai-section {
+            background: #f0f7ff;
+            border-left: 4px solid #007AFF;
+            padding: 15px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        footer {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Laporan Audit SEO & GEO</h1>
+        <p>{{ record.url }}</p>
+    </header>
+
+    <div class="meta">
+        <div class="meta-item">
+            <div class="meta-label">Domain</div>
+            <div class="meta-value">{{ record.domain }}</div>
+        </div>
+        <div class="meta-item">
+            <div class="meta-label">Tanggal Audit</div>
+            <div class="meta-value">{{ record.created_at.strftime('%d %B %Y %H:%M') }}</div>
+        </div>
+        <div class="meta-item">
+            <div class="meta-label">Versi Laporan</div>
+            <div class="meta-value">2.0</div>
+        </div>
+    </div>
+
+    <div class="score-section">
+        <div class="score-box">
+            <h3>Skor SEO</h3>
+            <div class="score-number score-seo">{{ audit.seo.score }}</div>
+            <p style="color: #666; font-size: 12px;">dari 100</p>
+        </div>
+        <div class="score-box">
+            <h3>Skor GEO</h3>
+            <div class="score-number score-geo">{{ audit.geo.score }}</div>
+            <p style="color: #666; font-size: 12px;">dari 100</p>
+        </div>
+    </div>
+
+    <!-- Robots.txt Section -->
+    <h2>Konfigurasi Robots.txt</h2>
+    <table>
+        <tr>
+            <th>Status</th>
+            <th>Informasi</th>
+        </tr>
+        <tr>
+            <td>File</td>
+            <td>{% if audit.robots.exists %}<span class="status-good">✓ Ditemukan</span>{% else %}<span class="status-warning">⚠ Tidak Ditemukan</span>{% endif %}</td>
+        </tr>
+        <tr>
+            <td>Default User-Agent</td>
+            <td>{% if audit.robots.default_ua_allowed %}<span class="status-good">✓ Diizinkan</span>{% else %}<span class="status-error">✗ Diblokir</span>{% endif %}</td>
+        </tr>
+    </table>
+
+    <!-- Sitemap Section -->
+    <h2>Sitemap</h2>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+        </tr>
+        <tr>
+            <td>Status</td>
+            <td>{% if audit.sitemap.found %}<span class="status-good">✓ Ditemukan</span>{% else %}<span class="status-warning">⚠ Tidak Ditemukan</span>{% endif %}</td>
+        </tr>
+        <tr>
+            <td>Total URLs</td>
+            <td>{{ audit.sitemap.url_count }}</td>
+        </tr>
+        <tr>
+            <td>Format</td>
+            <td>{{ audit.sitemap.format or "N/A" }}</td>
+        </tr>
+    </table>
+
+    <!-- SEO Analysis -->
+    <h2>Analisa SEO On-Page</h2>
+    <table>
+        <tr>
+            <th>Cek</th>
+            <th>Status</th>
+            <th>Detail</th>
+        </tr>
+        {% for check in audit.seo.checks %}
+        <tr>
+            <td>{{ check.name }}</td>
+            <td><span class="status-{{ check.status }}">{{ check.status|upper }}</span></td>
+            <td>{{ check.message }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- GEO Analysis -->
+    <h2>Analisa GEO Readiness</h2>
+    <table>
+        <tr>
+            <th>Cek</th>
+            <th>Status</th>
+            <th>Detail</th>
+        </tr>
+        {% for check in audit.geo.checks %}
+        <tr>
+            <td>{{ check.name }}</td>
+            <td><span class="status-{{ check.status }}">{{ check.status|upper }}</span></td>
+            <td>{{ check.message }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- AI Recommendation -->
+    {% if record.ai_recommendation %}
+    <h2>Rekomendasi AI</h2>
+    <div class="ai-section">
+        {{ record.ai_recommendation }}
+    </div>
+    {% endif %}
+
+    <footer>
+        <p>Laporan ini dibuat secara otomatis oleh SEO & GEO Analyzer. Untuk informasi lebih lanjut, kunjungi https://analyzer.local/</p>
+    </footer>
+</body>
+</html>
