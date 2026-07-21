@@ -25,19 +25,110 @@
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06);
   --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.10);
 
-  --transition-smooth: 0.35s cubic-bezier(0.28, 0.11, 0.32, 1);
+   --transition-smooth: 0.35s cubic-bezier(0.28, 0.11, 0.32, 1);
+
+   /* V2 Additions */
+   --color-primary: #007AFF;
+   --color-secondary: #34C759;
+   --color-link: #007AFF;
+   --color-bg-secondary: #f9f9fb;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #000000;
-    --color-surface: #1c1c1e;
-    --color-text-primary: #f5f5f7;
-    --color-text-secondary: #a1a1a6;
-    --color-border: rgba(255, 255, 255, 0.1);
-    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
-    --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.4);
-  }
+   :root {
+     --color-bg: #000000;
+     --color-surface: #1c1c1e;
+     --color-text-primary: #f5f5f7;
+     --color-text-secondary: #a1a1a6;
+     --color-border: rgba(255, 255, 255, 0.1);
+     --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+     --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.4);
+     --color-bg-secondary: #2c2c2e;
+   }
+}
+
+/* --- Navigation Bar (V2) --- */
+.navbar {
+   position: sticky;
+   top: 0;
+   z-index: 1000;
+   background: rgba(255, 255, 255, 0.8);
+   backdrop-filter: saturate(180%) blur(20px);
+   border-bottom: 1px solid var(--color-border);
+   padding: 0 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+   .navbar {
+     background: rgba(28, 28, 30, 0.8);
+   }
+}
+
+.navbar__container {
+   max-width: 1200px;
+   margin: 0 auto;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   height: 56px;
+}
+
+.navbar__logo a {
+   font-weight: 600;
+   font-size: 0.9375rem;
+   color: var(--color-text-primary);
+   text-decoration: none;
+   transition: opacity var(--transition-smooth);
+}
+
+.navbar__logo a:hover {
+   opacity: 0.7;
+}
+
+.navbar__links {
+   display: flex;
+   gap: 28px;
+}
+
+.navbar__link {
+   font-size: 0.9375rem;
+   color: var(--color-text-secondary);
+   text-decoration: none;
+   transition: color var(--transition-smooth);
+   position: relative;
+}
+
+.navbar__link:hover {
+   color: var(--color-text-primary);
+}
+
+.navbar__link::after {
+   content: '';
+   position: absolute;
+   bottom: -2px;
+   left: 0;
+   width: 0;
+   height: 2px;
+   background: var(--color-link);
+   transition: width var(--transition-smooth);
+}
+
+.navbar__link:hover::after {
+   width: 100%;
+}
+
+@media (max-width: 768px) {
+   .navbar__links {
+     gap: 16px;
+   }
+
+   .navbar__logo a {
+     font-size: 0.875rem;
+   }
+
+   .navbar__link {
+     font-size: 0.875rem;
+   }
 }
 
 /* --- Reset & Base --- */

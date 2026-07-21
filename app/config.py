@@ -21,5 +21,13 @@ class Settings:
     # Maximum HTML content size to fetch (5MB)
     MAX_CONTENT_SIZE: int = 5 * 1024 * 1024
 
+    # --- V2 ---
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/analyzer.db")
+    MAX_MULTI_PAGE_URLS: int = int(os.getenv("MAX_MULTI_PAGE_URLS", "10"))
+    MULTI_PAGE_CONCURRENCY: int = int(os.getenv("MULTI_PAGE_CONCURRENCY", "3"))
+    RATE_LIMIT_ANALYZE: str = os.getenv("RATE_LIMIT_ANALYZE", "10/minute")
+    RATE_LIMIT_MULTI_PAGE: str = os.getenv("RATE_LIMIT_MULTI_PAGE", "3/minute")
+    AI_STREAM_TIMEOUT_SECONDS: int = int(os.getenv("AI_STREAM_TIMEOUT_SECONDS", "90"))
+
 
 settings = Settings()
