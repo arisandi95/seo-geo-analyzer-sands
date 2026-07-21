@@ -12,7 +12,7 @@ from app.services.robots_checker import analyze_robots, get_robots_not_found
 from app.services.sitemap_checker import check_sitemap
 from app.services.seo_analyzer import analyze_seo
 from app.services.geo_analyzer import analyze_geo
-from app.services.ai_advisor import get_ai_recommendations, get_keyword_estimates
+from app.services.ai_advisor import get_ai_recommendations, get_keyword_estimates, get_backlink_estimates
 from app.services.history_service import save_analysis
 from app.config import settings
 
@@ -91,11 +91,13 @@ async def analyze(request: Request, url: str = Form(...)):
 
     # Get AI recommendation + keyword ranking estimates in parallel
     # (both never raise by contract — errors become fallback messages)
-    ai_recommendation, keyword_estimates = await asyncio.gather(
+    ai_recommendation, keyword_estimates, backlink_estimates = await asyncio.gather(
         get_ai_recommendations(audit_data),
         get_keyword_estimates(audit_data),
+        get_backlink_estimates(audit_data),
     )
     audit_data["keyword_estimates"] = keyword_estimates
+    audit_data["backlink_estimates"] = backlink_estimates
 
     # Step 6: Save analysis to history (non-blocking — errors logged but don't break flow)
     record_id = await save_analysis(url, audit_data, ai_recommendation=ai_recommendation)

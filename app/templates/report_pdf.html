@@ -297,6 +297,108 @@
     </table>
     {% endif %}
 
+    <!-- On-Page Link Structure -->
+    {% if audit.seo.link_structure %}
+    <h2>Struktur Link On-Page</h2>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+        </tr>
+        <tr><td>Total Link</td><td>{{ audit.seo.link_structure.total }}</td></tr>
+        <tr><td>Internal</td><td>{{ audit.seo.link_structure.internal }}</td></tr>
+        <tr><td>External</td><td>{{ audit.seo.link_structure.external }}</td></tr>
+        <tr><td>Nofollow</td><td>{{ audit.seo.link_structure.nofollow }}</td></tr>
+        <tr><td>Dofollow</td><td>{{ audit.seo.link_structure.dofollow }}</td></tr>
+    </table>
+    {% if audit.seo.link_structure.top_anchors %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Anchor Teratas (On-Page)</h3>
+    <table>
+        <tr>
+            <th>Anchor Text</th>
+            <th>Jumlah</th>
+        </tr>
+        {% for row in audit.seo.link_structure.top_anchors %}
+        <tr>
+            <td>{{ row.anchor }}</td>
+            <td>{{ row.count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endif %}
+
+    <!-- Friendly Links -->
+    {% if audit.seo.friendly_links %}
+    <h2>Friendly Links</h2>
+    <table>
+        <tr>
+            <th>Metrik</th>
+            <th>Nilai</th>
+        </tr>
+        <tr><td>URL internal unik dicek</td><td>{{ audit.seo.friendly_links.checked }}</td></tr>
+        <tr><td>Friendly</td><td>{{ audit.seo.friendly_links.friendly }}</td></tr>
+        <tr><td>Tidak friendly</td><td>{{ audit.seo.friendly_links.checked - audit.seo.friendly_links.friendly }}</td></tr>
+        {% if audit.seo.friendly_links.unfriendly_examples %}
+        <tr><td>Contoh tidak friendly</td><td>{{ audit.seo.friendly_links.unfriendly_examples | join(' , ') }}</td></tr>
+        {% endif %}
+    </table>
+    {% endif %}
+
+    <!-- AI Backlink Profile Estimate -->
+    {% if audit.backlink_estimates and audit.backlink_estimates.available %}
+    <h2>Estimasi Profil Backlink (AI)</h2>
+    <p style="font-style: italic; color: #666; font-size: 11px;">Perkiraan kualitatif dari AI — BUKAN data backlink real (bukan Ahrefs/Moz/Search Console).</p>
+    {% if audit.backlink_estimates.summary %}
+    <p style="font-size: 12px;"><strong>Potensi: {{ audit.backlink_estimates.summary.level }}</strong> — {{ audit.backlink_estimates.summary.reason }}</p>
+    {% endif %}
+    {% if audit.backlink_estimates.top_pages %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Halaman Berpeluang Menarik Backlink</h3>
+    <table>
+        <tr>
+            <th>Halaman</th>
+            <th>Alasan</th>
+        </tr>
+        {% for row in audit.backlink_estimates.top_pages %}
+        <tr>
+            <td>{{ row.page }}</td>
+            <td>{{ row.reason }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% if audit.backlink_estimates.top_anchors %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Anchor Text yang Disarankan</h3>
+    <table>
+        <tr>
+            <th>Anchor</th>
+            <th>Tipe</th>
+        </tr>
+        {% for row in audit.backlink_estimates.top_anchors %}
+        <tr>
+            <td>{{ row.anchor }}</td>
+            <td>{{ row.type }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% if audit.backlink_estimates.geographies %}
+    <h3 style="font-size: 13px; margin: 10px 0 6px;">Estimasi Geografi Referring Domain</h3>
+    <table>
+        <tr>
+            <th>Negara</th>
+            <th>Porsi</th>
+        </tr>
+        {% for row in audit.backlink_estimates.geographies %}
+        <tr>
+            <td>{{ row.country }}</td>
+            <td>{{ row.share }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% endif %}
+
     <!-- GEO Analysis -->
     <h2>Analisa GEO Readiness</h2>
     <table>
