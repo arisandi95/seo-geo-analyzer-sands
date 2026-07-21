@@ -1,0 +1,708 @@
+{% if error %}
+<!-- Error State -->
+<div class="result-error">
+    <div class="result-error__icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+    </div>
+    <h3 class="result-error__title">Perbandingan Gagal</h3>
+    <p class="result-error__desc">{{ error }}</p>
+</div>
+{% else %}
+
+<!-- Results Section -->
+<div class="compare-results">
+    <!-- Header -->
+    <div class="compare-results__header">
+        <div class="compare-results__header-text">
+            <span class="compare-results__badge">Hasil Analisis</span>
+            <h2 class="compare-results__title">Perbandingan Kompetitif</h2>
+            <p class="compare-results__subtitle">Analisis berdampingan kedua website</p>
+        </div>
+    </div>
+
+    <!-- Score Cards Side by Side -->
+    <div class="compare-score-grid">
+        <div class="compare-score-card">
+            <div class="compare-score-card__header">
+                <span class="compare-score-card__label">Website 1</span>
+                <span class="compare-score-card__domain">{{ audit1.url[:35] }}{% if audit1.url|length > 35 %}...{% endif %}</span>
+            </div>
+            <div class="compare-score-card__body">
+                <div class="compare-score-ring">
+                    <svg class="compare-score-ring__svg" width="100" height="100" viewBox="0 0 120 120">
+                        <circle class="compare-score-ring__bg" cx="60" cy="60" r="52"/>
+                        <circle class="compare-score-ring__progress compare-score-ring__progress--seo" cx="60" cy="60" r="52"
+                            stroke-dasharray="326.73"
+                            stroke-dashoffset="{{ (1 - audit1.seo.score / 100) * 326.73 }}">
+                        </circle>
+                    </svg>
+                    <div class="compare-score-ring__value">
+                        <span class="compare-score-ring__number">{{ audit1.seo.score }}</span>
+                        <span class="compare-score-ring__unit">SEO</span>
+                    </div>
+                </div>
+                <div class="compare-score-ring">
+                    <svg class="compare-score-ring__svg" width="100" height="100" viewBox="0 0 120 120">
+                        <circle class="compare-score-ring__bg" cx="60" cy="60" r="52"/>
+                        <circle class="compare-score-ring__progress compare-score-ring__progress--geo" cx="60" cy="60" r="52"
+                            stroke-dasharray="326.73"
+                            stroke-dashoffset="{{ (1 - audit1.geo.score / 100) * 326.73 }}">
+                        </circle>
+                    </svg>
+                    <div class="compare-score-ring__value">
+                        <span class="compare-score-ring__number">{{ audit1.geo.score }}</span>
+                        <span class="compare-score-ring__unit">GEO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="compare-vs-divider">
+            <span class="compare-vs-divider__pill">VS</span>
+        </div>
+
+        <div class="compare-score-card">
+            <div class="compare-score-card__header">
+                <span class="compare-score-card__label">Website 2</span>
+                <span class="compare-score-card__domain">{{ audit2.url[:35] }}{% if audit2.url|length > 35 %}...{% endif %}</span>
+            </div>
+            <div class="compare-score-card__body">
+                <div class="compare-score-ring">
+                    <svg class="compare-score-ring__svg" width="100" height="100" viewBox="0 0 120 120">
+                        <circle class="compare-score-ring__bg" cx="60" cy="60" r="52"/>
+                        <circle class="compare-score-ring__progress compare-score-ring__progress--seo" cx="60" cy="60" r="52"
+                            stroke-dasharray="326.73"
+                            stroke-dashoffset="{{ (1 - audit2.seo.score / 100) * 326.73 }}">
+                        </circle>
+                    </svg>
+                    <div class="compare-score-ring__value">
+                        <span class="compare-score-ring__number">{{ audit2.seo.score }}</span>
+                        <span class="compare-score-ring__unit">SEO</span>
+                    </div>
+                </div>
+                <div class="compare-score-ring">
+                    <svg class="compare-score-ring__svg" width="100" height="100" viewBox="0 0 120 120">
+                        <circle class="compare-score-ring__bg" cx="60" cy="60" r="52"/>
+                        <circle class="compare-score-ring__progress compare-score-ring__progress--geo" cx="60" cy="60" r="52"
+                            stroke-dasharray="326.73"
+                            stroke-dashoffset="{{ (1 - audit2.geo.score / 100) * 326.73 }}">
+                        </circle>
+                    </svg>
+                    <div class="compare-score-ring__value">
+                        <span class="compare-score-ring__number">{{ audit2.geo.score }}</span>
+                        <span class="compare-score-ring__unit">GEO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Comparison Table -->
+    <div class="compare-detail-card">
+        <div class="compare-detail-card__header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            <h3>Perbandingan Detail</h3>
+        </div>
+        <div class="compare-detail-table-wrapper">
+            <table class="compare-detail-table">
+                <thead>
+                    <tr>
+                        <th>Metrik</th>
+                        <th class="compare-detail-table__url-col">
+                            <span class="url-indicator url-indicator--1"></span>
+                            {{ audit1.url[:25] }}{% if audit1.url|length > 25 %}...{% endif %}
+                        </th>
+                        <th class="compare-detail-table__url-col">
+                            <span class="url-indicator url-indicator--2"></span>
+                            {{ audit2.url[:25] }}{% if audit2.url|length > 25 %}...{% endif %}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="compare-detail-table__label">Skor SEO</td>
+                        <td class="{% if audit1.seo.score > audit2.seo.score %}cell-winner{% elif audit1.seo.score == audit2.seo.score %}cell-draw{% endif %}">
+                            <span class="cell-score">{{ audit1.seo.score }}</span>
+                            {% if audit1.seo.score > audit2.seo.score %}<span class="cell-badge cell-badge--win">Unggul</span>{% endif %}
+                            {% if audit1.seo.score == audit2.seo.score %}<span class="cell-badge cell-badge--draw">Seri</span>{% endif %}
+                        </td>
+                        <td class="{% if audit2.seo.score > audit1.seo.score %}cell-winner{% elif audit1.seo.score == audit2.seo.score %}cell-draw{% endif %}">
+                            <span class="cell-score">{{ audit2.seo.score }}</span>
+                            {% if audit2.seo.score > audit1.seo.score %}<span class="cell-badge cell-badge--win">Unggul</span>{% endif %}
+                            {% if audit1.seo.score == audit2.seo.score %}<span class="cell-badge cell-badge--draw">Seri</span>{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="compare-detail-table__label">Skor GEO</td>
+                        <td class="{% if audit1.geo.score > audit2.geo.score %}cell-winner{% elif audit1.geo.score == audit2.geo.score %}cell-draw{% endif %}">
+                            <span class="cell-score">{{ audit1.geo.score }}</span>
+                            {% if audit1.geo.score > audit2.geo.score %}<span class="cell-badge cell-badge--win">Unggul</span>{% endif %}
+                            {% if audit1.geo.score == audit2.geo.score %}<span class="cell-badge cell-badge--draw">Seri</span>{% endif %}
+                        </td>
+                        <td class="{% if audit2.geo.score > audit1.geo.score %}cell-winner{% elif audit1.geo.score == audit2.geo.score %}cell-draw{% endif %}">
+                            <span class="cell-score">{{ audit2.geo.score }}</span>
+                            {% if audit2.geo.score > audit1.geo.score %}<span class="cell-badge cell-badge--win">Unggul</span>{% endif %}
+                            {% if audit1.geo.score == audit2.geo.score %}<span class="cell-badge cell-badge--draw">Seri</span>{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="compare-detail-table__label">Robots.txt</td>
+                        <td>
+                            <span class="status-dot {% if audit1.robots.exists %}status-dot--success{% else %}status-dot--error{% endif %}"></span>
+                            {{ "Ada" if audit1.robots.exists else "Tidak Ada" }}
+                        </td>
+                        <td>
+                            <span class="status-dot {% if audit2.robots.exists %}status-dot--success{% else %}status-dot--error{% endif %}"></span>
+                            {{ "Ada" if audit2.robots.exists else "Tidak Ada" }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="compare-detail-table__label">Sitemap URLs</td>
+                        <td><span class="cell-number">{{ audit1.sitemap.url_count }}</span></td>
+                        <td><span class="cell-number">{{ audit2.sitemap.url_count }}</span></td>
+                    </tr>
+                    <tr>
+                        <td class="compare-detail-table__label">Word Count</td>
+                        <td><span class="cell-number">{{ audit1.seo.word_count or 0 }}</span></td>
+                        <td><span class="cell-number">{{ audit2.seo.word_count or 0 }}</span></td>
+                    </tr>
+                    <tr>
+                        <td class="compare-detail-table__label">Internal Links</td>
+                        <td><span class="cell-number">{{ audit1.seo.internal_links or 0 }}</span></td>
+                        <td><span class="cell-number">{{ audit2.seo.internal_links or 0 }}</span></td>
+                    </tr>
+                    <tr>
+                        <td class="compare-detail-table__label">External Links</td>
+                        <td><span class="cell-number">{{ audit1.seo.external_links or 0 }}</span></td>
+                        <td><span class="cell-number">{{ audit2.seo.external_links or 0 }}</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- AI Recommendation -->
+    {% if ai_recommendation %}
+    <div class="compare-ai-card">
+        <div class="compare-ai-card__topbar"></div>
+        <div class="compare-ai-card__header">
+            <div class="compare-ai-card__icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a4 4 0 0 1 4 4c0 2-2 4-4 4s-4-2-4-4a4 4 0 0 1 4-4z"/>
+                    <path d="M16 14h-8a4 4 0 0 0-4 4v2h16v-2a4 4 0 0 0-4-4z"/>
+                    <path d="M22 13l-2 5 2 2"/>
+                    <path d="M2 13l2 5-2 2"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="compare-ai-card__title">Analisis Perbandingan AI</h3>
+                <p class="compare-ai-card__subtitle">Insight kompetitif & rekomendasi berbasis data</p>
+            </div>
+        </div>
+        <div class="compare-ai-card__body ai-content">
+            {{ ai_recommendation | safe }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<style>
+/* ─── Error State ─── */
+.result-error {
+    text-align: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 48px 32px;
+    margin-top: 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.result-error__icon {
+    color: var(--color-error);
+    opacity: 0.6;
+    margin-bottom: 16px;
+}
+
+.result-error__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.result-error__desc {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* ─── Compare Results Container ─── */
+.compare-results {
+    margin-top: 24px;
+}
+
+.compare-results__header {
+    text-align: center;
+    margin-bottom: 28px;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.compare-results__badge {
+    display: inline-block;
+    background: rgba(52, 199, 89, 0.1);
+    color: #34C759;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+}
+
+.compare-results__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.compare-results__subtitle {
+    font-size: 0.9375rem;
+    color: var(--color-text-secondary);
+}
+
+/* ─── Score Grid ─── */
+.compare-score-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.compare-score-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    animation: fadeInUp 0.5s ease-out both;
+}
+
+.compare-score-card:nth-child(1) { animation-delay: 0.1s; }
+.compare-score-card:nth-child(3) { animation-delay: 0.2s; }
+
+.compare-score-card__header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.compare-score-card__label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+}
+
+.compare-score-card__domain {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    word-break: break-all;
+}
+
+.compare-score-card__body {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+/* ─── Score Rings ─── */
+.compare-score-ring {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.compare-score-ring__svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-90deg);
+}
+
+.compare-score-ring__bg {
+    fill: none;
+    stroke: var(--color-border);
+    stroke-width: 8;
+}
+
+.compare-score-ring__progress {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.compare-score-ring__progress--seo {
+    stroke: url(#seo-gradient) #34C759;
+    stroke: #34C759;
+}
+
+.compare-score-ring__progress--geo {
+    stroke: url(#geo-gradient) #007AFF;
+    stroke: #007AFF;
+}
+
+.compare-score-ring__value {
+    text-align: center;
+    z-index: 1;
+}
+
+.compare-score-ring__number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+}
+
+.compare-score-ring__unit {
+    display: block;
+    font-size: 0.6875rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+    font-weight: 600;
+}
+
+/* ─── VS Divider ─── */
+.compare-vs-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.compare-vs-divider__pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #007AFF, #5856D6);
+    color: white;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.35);
+}
+
+/* ─── Detail Card ─── */
+.compare-detail-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    animation: fadeInUp 0.5s ease-out both;
+    animation-delay: 0.3s;
+}
+
+.compare-detail-card__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-accent);
+}
+
+.compare-detail-card__header h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.compare-detail-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.compare-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+}
+
+.compare-detail-table thead {
+    background: var(--color-bg);
+}
+
+.compare-detail-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.compare-detail-table__url-col {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.url-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.url-indicator--1 { background: #34C759; }
+.url-indicator--2 { background: #007AFF; }
+
+.compare-detail-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.compare-detail-table tr:last-child td {
+    border-bottom: none;
+}
+
+.compare-detail-table__label {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+}
+
+.cell-winner {
+    background: rgba(52, 199, 89, 0.04);
+}
+
+.cell-draw {
+    background: rgba(0, 113, 227, 0.04);
+}
+
+.cell-score {
+    font-weight: 700;
+    font-size: 1.0625rem;
+}
+
+.cell-badge {
+    display: inline-block;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.cell-badge--win {
+    background: rgba(52, 199, 89, 0.12);
+    color: #34C759;
+}
+
+.cell-badge--draw {
+    background: rgba(0, 113, 227, 0.1);
+    color: var(--color-accent);
+}
+
+.cell-number {
+    font-weight: 600;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 0.9375rem;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.status-dot--success { background: var(--color-success); }
+.status-dot--error { background: var(--color-error); }
+
+/* ─── AI Card ─── */
+.compare-ai-card {
+    background: var(--color-surface);
+    border: 1px solid transparent;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease-out both;
+    animation-delay: 0.4s;
+    background: linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+                linear-gradient(135deg, rgba(0, 113, 227, 0.3), rgba(175, 82, 222, 0.3)) border-box;
+}
+
+.compare-ai-card__topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #007AFF, #AF52DE, #007AFF);
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.compare-ai-card__header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.compare-ai-card__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0, 113, 227, 0.1), rgba(175, 82, 222, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+
+.compare-ai-card__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.compare-ai-card__subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+.compare-ai-card__body {
+    font-size: 0.9375rem;
+    line-height: 1.7;
+}
+
+/* ─── AI Content Shared Styles ─── */
+.ai-content h1, .ai-content h2, .ai-content h3 {
+    margin-top: 20px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.ai-content h2 { font-size: 1.125rem; }
+.ai-content h3 { font-size: 1rem; }
+
+.ai-content ul, .ai-content ol {
+    padding-left: 20px;
+    margin: 8px 0;
+}
+
+.ai-content li {
+    margin-bottom: 6px;
+}
+
+.ai-content strong {
+    font-weight: 600;
+}
+
+.ai-content p {
+    margin-bottom: 10px;
+}
+
+/* ─── Animation ─── */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .compare-score-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .compare-vs-divider {
+        padding: 4px 0;
+    }
+
+    .compare-score-card {
+        padding: 20px;
+    }
+
+    .compare-score-card__body {
+        gap: 16px;
+    }
+
+    .compare-detail-card,
+    .compare-ai-card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .compare-detail-table {
+        font-size: 0.875rem;
+    }
+
+    .compare-detail-table th,
+    .compare-detail-table td {
+        padding: 10px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .compare-score-card__body {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+</style>

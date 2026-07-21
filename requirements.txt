@@ -8,3 +8,10 @@ protego
 python-dotenv
 jinja2
 python-multipart
+sqlalchemy[asyncio]
+aiosqlite
+slowapi
+bleach
+markdown
+cachetools
+weasyprint   # opsional — butuh GTK di Windows; ada fallback window.print() jika gagal import

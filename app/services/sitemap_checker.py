@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 import defusedxml.ElementTree as ET
 
 from app.config import settings
-from app.services.fetcher import fetch_url
+from app.services.fetcher import fetch_url_cached, make_client
 
 
 # Common sitemap namespaces
@@ -42,14 +42,9 @@ async def check_sitemap(url: str, robots_sitemap_urls: List[str] = None) -> dict
         if candidate not in urls_to_try:
             urls_to_try.append(candidate)
 
-    async with httpx.AsyncClient(
-        timeout=httpx.Timeout(settings.REQUEST_TIMEOUT_SECONDS, connect=10),
-        headers={
-            "User-Agent": "Mozilla/5.0 (compatible; SEOGEOAnalyzer/1.0)"
-        },
-    ) as client:
+    async with make_client() as client:
         for sitemap_url in urls_to_try:
-            content, status = await fetch_url(client, sitemap_url, max_size=10 * 1024 * 1024)
+            content, status = await fetch_url_cached(client, sitemap_url, max_size=10 * 1024 * 1024)
             if content and status == 200:
                 result = parse_sitemap(content, sitemap_url)
                 if result["found"]:
