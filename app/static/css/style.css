@@ -1027,3 +1027,22 @@ a {
   color: var(--color-text-secondary);
   margin-top: 8px;
 }
+
+/* --- Buy Me a Coffee button --- */
+.bmc-btn {
+  display: inline-block;
+  background: #ffdd00;
+  color: #0d0c22;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bmc-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 221, 0, 0.4);
+}
