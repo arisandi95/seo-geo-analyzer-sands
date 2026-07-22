@@ -48,6 +48,9 @@
     </script>
 </head>
 <body>
+    {# Username Buy Me a Coffee — isi untuk menampilkan tombol dukungan (lihat COFFEE.md) #}
+    {% set bmc_username = "" %}
+
     <!-- Navigation Bar (V2) -->
     <nav class="navbar">
         <div class="navbar__container">
@@ -58,6 +61,9 @@
                 <a href="/" class="navbar__link">Analisa</a>
                 <a href="/history" class="navbar__link">Riwayat</a>
                 <a href="/compare" class="navbar__link">Perbandingan</a>
+                {% if bmc_username %}
+                <a href="https://buymeacoffee.com/{{ bmc_username }}" target="_blank" rel="noopener" class="bmc-btn">☕ Buy me a coffee</a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -66,6 +72,9 @@
 
     <footer class="footer">
         <p>SEO & GEO Analyzer — Ditenagai oleh AI</p>
+        {% if bmc_username %}
+        <p style="margin-top: 8px;"><a href="https://buymeacoffee.com/{{ bmc_username }}" target="_blank" rel="noopener" class="bmc-btn">☕ Dukung project ini</a></p>
+        {% endif %}
     </footer>
 
     <script src="/static/js/app.js"></script>
