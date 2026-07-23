@@ -49,7 +49,7 @@
 </head>
 <body>
     {# Username Buy Me a Coffee — isi untuk menampilkan tombol dukungan (lihat COFFEE.md) #}
-    {% set bmc_username = "" %}
+    {% set bmc_username = "tosdwika" %}
 
     <!-- Navigation Bar (V2) -->
     <nav class="navbar">
@@ -58,9 +58,23 @@
                 <a href="/">SEO & GEO Analyzer</a>
             </div>
             <div class="navbar__links">
-                <a href="/" class="navbar__link">Analisa</a>
-                <a href="/history" class="navbar__link">Riwayat</a>
-                <a href="/compare" class="navbar__link">Perbandingan</a>
+                <a href="/" class="navbar__icon-link" title="Analisa Website">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                </a>
+                <a href="/history" class="navbar__icon-link" title="Riwayat">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3v5h5"/>
+                        <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/>
+                    </svg>
+                </a>
+                <a href="/compare" class="navbar__icon-link" title="Perbandingan">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <text x="12" y="17" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor" stroke="none">VS</text>
+                    </svg>
+                </a>
                 {% if bmc_username %}
                 <a href="https://buymeacoffee.com/{{ bmc_username }}" target="_blank" rel="noopener" class="bmc-btn">☕ Buy me a coffee</a>
                 {% endif %}
