@@ -38,16 +38,19 @@ async def get_ai_recommendations(audit_data: dict) -> str:
         "Content-Type": "application/json",
     }
 
+    is_openai = settings.OLLAMA_BASE_URL.rstrip("/").endswith("v1")
+    endpoint = f"{settings.OLLAMA_BASE_URL.rstrip('/')}/chat/completions" if is_openai else f"{settings.OLLAMA_BASE_URL.rstrip('/')}/api/chat"
+
     async with httpx.AsyncClient(timeout=60) as client:
         try:
             resp = await client.post(
-                f"{settings.OLLAMA_BASE_URL}/api/chat",
+                endpoint,
                 headers=headers,
                 json=payload,
             )
             resp.raise_for_status()
             data = resp.json()
-            return data["message"]["content"]
+            return data["choices"][0]["message"]["content"] if is_openai else data["message"]["content"]
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 401:
                 return "⚠️ Gagal terhubung ke Ollama Cloud: API key tidak valid atau kadaluarsa."
@@ -107,6 +110,8 @@ async def get_keyword_estimates(audit_data: dict) -> dict:
             "estimates": [],
         }
 
+    is_openai = settings.OLLAMA_BASE_URL.rstrip("/").endswith("v1")
+    
     payload = {
         "model": settings.OLLAMA_MODEL,
         "messages": [
@@ -114,8 +119,11 @@ async def get_keyword_estimates(audit_data: dict) -> dict:
             {"role": "user", "content": json.dumps(payload_data, ensure_ascii=False)},
         ],
         "stream": False,
-        "format": "json",
     }
+    if is_openai:
+        payload["response_format"] = {"type": "json_object"}
+    else:
+        payload["format"] = "json"
     headers = {
         "Authorization": f"Bearer {settings.OLLAMA_API_KEY}",
         "Content-Type": "application/json",
@@ -123,13 +131,15 @@ async def get_keyword_estimates(audit_data: dict) -> dict:
 
     async with httpx.AsyncClient(timeout=60) as client:
         try:
+            endpoint = f"{settings.OLLAMA_BASE_URL.rstrip('/')}/chat/completions" if is_openai else f"{settings.OLLAMA_BASE_URL.rstrip('/')}/api/chat"
             resp = await client.post(
-                f"{settings.OLLAMA_BASE_URL}/api/chat",
+                endpoint,
                 headers=headers,
                 json=payload,
             )
             resp.raise_for_status()
-            content = resp.json()["message"]["content"]
+            data = resp.json()
+            content = data["choices"][0]["message"]["content"] if is_openai else data["message"]["content"]
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 401:
                 return {"available": False, "note": "⚠️ Gagal terhubung ke Ollama Cloud: API key tidak valid atau kadaluarsa.", "estimates": []}
