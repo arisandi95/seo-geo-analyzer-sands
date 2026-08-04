@@ -1,5 +1,16 @@
 User-agent: *
 Allow: /
 
-# Add your sitemap URL here
+# Izinkan semua crawler untuk mengindeks halaman utama dan konten publik
+Disallow: /admin/
+Disallow: /private/
+Disallow: /tmp/
+Disallow: /api/
+
+# Prioritaskan indeksasi halaman yang relevan
+Allow: /blog/
+Allow: /about/
+Allow: /contact/
+
+# Sitemap untuk SEO
 Sitemap: https://seo.yuvite.com/sitemap.xml

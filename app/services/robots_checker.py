@@ -18,6 +18,18 @@ AI_CRAWLERS = [
 ]
 
 
+def _detect_content_signals_note(robots_txt_content: str) -> Optional[str]:
+    """Return a human-readable note when the file uses content-signal-style comments."""
+    lower_content = robots_txt_content.lower()
+    if "content signals" in lower_content or "ai-input" in lower_content or "ai-train" in lower_content:
+        return (
+            "File ini menggunakan format 'content signals' yang berbeda dari robots.txt standar. "
+            "Karena tidak ada perintah Disallow/Allow standar yang bisa diproses, "
+            "aplikasi menilai crawler tetap diizinkan secara default."
+        )
+    return None
+
+
 def analyze_robots(robots_txt_content: str, target_path: str = "/") -> dict:
     """
     Analyze robots.txt content.
@@ -36,6 +48,7 @@ def analyze_robots(robots_txt_content: str, target_path: str = "/") -> dict:
             ai_crawler_status[bot] = rp.can_fetch(target_path, bot)
 
         sitemap_urls = list(rp.sitemaps) if rp.sitemaps else []
+        note = _detect_content_signals_note(robots_txt_content)
 
         return {
             "exists": True,
@@ -43,6 +56,8 @@ def analyze_robots(robots_txt_content: str, target_path: str = "/") -> dict:
             "default_ua_allowed": rp.can_fetch(target_path, "*"),
             "ai_crawler_access": ai_crawler_status,
             "error": None,
+            "note": note,
+            "raw_content": robots_txt_content,
         }
     except Exception as e:
         return {
@@ -51,6 +66,8 @@ def analyze_robots(robots_txt_content: str, target_path: str = "/") -> dict:
             "default_ua_allowed": True,
             "ai_crawler_access": {},
             "error": f"Gagal mem-parse robots.txt: {str(e)}",
+            "note": _detect_content_signals_note(robots_txt_content),
+            "raw_content": robots_txt_content,
         }
 
 
@@ -62,4 +79,6 @@ def get_robots_not_found() -> dict:
         "default_ua_allowed": True,
         "ai_crawler_access": {bot: True for bot in AI_CRAWLERS},
         "error": None,
+        "note": None,
+        "raw_content": None,
     }
