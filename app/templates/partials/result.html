@@ -57,7 +57,23 @@
                 <div class="check-item__message">{% if audit.robots.default_ua_allowed %}Akses diizinkan untuk semua crawler standar.{% else %}Semua crawler diblokir secara default (Disallow: /).{% endif %}</div>
             </div>
         </li>
+        {% if audit.robots.note %}
+        <li class="check-item">
+            <span class="check-item__badge check-item__badge--warning">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </span>
+            <div class="check-item__content">
+                <div class="check-item__name">Catatan</div>
+                <div class="check-item__message">{{ audit.robots.note }}</div>
+            </div>
+        </li>
+        {% endif %}
     </ul>
+
+    {% if audit.robots.raw_content %}
+    <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 4px;">Isi robots.txt</h4>
+    <pre style="white-space: pre-wrap; word-break: break-word; background: var(--color-surface-alt); padding: 12px; border-radius: 8px; font-size: 0.8125rem; line-height: 1.5; margin: 0;">{{ audit.robots.raw_content }}</pre>
+    {% endif %}
 
     {% if audit.robots.ai_crawler_access %}
     <h4 style="font-size: 0.9375rem; font-weight: 600; margin-top: 20px; margin-bottom: 4px;">Status AI Crawler</h4>
