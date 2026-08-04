@@ -27,6 +27,8 @@ class RobotsResult(BaseModel):
     default_ua_allowed: bool = True
     ai_crawler_access: Dict[str, bool] = {}
     error: Optional[str] = None
+    note: Optional[str] = None
+    raw_content: Optional[str] = None
 
 
 class SitemapResult(BaseModel):

@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -61,3 +61,15 @@ async def index(request: Request):
 async def health():
     """Health check endpoint."""
     return JSONResponse({"status": "ok", "env": settings.APP_ENV})
+
+
+@app.get("/robots.txt")
+async def robots_txt():
+    """Serve the project robots.txt file for local testing."""
+    from pathlib import Path
+
+    robots_path = Path(__file__).resolve().parent.parent / "robots.txt"
+    if robots_path.exists():
+        return PlainTextResponse(robots_path.read_text(encoding="utf-8"), media_type="text/plain; charset=utf-8")
+
+    return PlainTextResponse("User-agent: *\nAllow: /\n", media_type="text/plain; charset=utf-8")
